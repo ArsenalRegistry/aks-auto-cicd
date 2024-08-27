@@ -1,4 +1,4 @@
-'''
+```
 
 # config.env파일 같은 경로에 생성
 GITHUB_TOKEN="" # github access token
@@ -21,4 +21,4 @@ DEST_SERVER="https://kubernetes.default.svc"
 DEST_NAMESPACE="coe-demo-value"
 ARGOCD_NAMESPACE="argocd"
 
-'''
+```
