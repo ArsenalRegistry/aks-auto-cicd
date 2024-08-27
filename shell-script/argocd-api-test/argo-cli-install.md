@@ -22,6 +22,7 @@ mv $HOME/argocd $HOME/bin/argocd
 ```
 $profile = [Environment]::GetEnvironmentVariable("HOME") + "/.bashrc"
 Add-Content -Path $profile -Value "`nexport PATH=`$HOME/bin:`$PATH"
+echo $env:PATH
 source $profile
 ```
 
