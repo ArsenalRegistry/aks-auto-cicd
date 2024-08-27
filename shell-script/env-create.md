@@ -1,6 +1,6 @@
 ```
-
-# config.env파일 같은 경로에 생성
+# config.env 파일을 같은 경로에 생성
+# 각 토큰값은 올릴 수 없어서 지워져있음 (따로 추가 필요)
 GITHUB_TOKEN="" # github access token
 GROUP_NAME="coe-demo-value"
 PROJECT_NAME="demo-value-project"
