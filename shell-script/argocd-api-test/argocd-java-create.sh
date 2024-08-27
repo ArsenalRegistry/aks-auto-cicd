@@ -12,8 +12,19 @@
 # kubectl rollout restart deployment argocd-server -n default # 설정 후 재시작, deployment명, namespace 명
 # 위 추가작업은 아래를 사용하면 될 것 같긴한데 테스트 필요 ( 어플리케이션 확장 및 설치로 진행하면 앞에 label명은 다르지만 뒤에 리소스가 동일한 값으로 적용)
 # 따라서 kubectl로 configmap에 데이터 추가 후 rollout으로 argocd server 재기동 및 token 발급까지 진행
-# 발급 받은
+# cm 에서 해당 설정 추가해야 ingress 부분에서 host 설정이 없어도 progress에서 멈추지 않음
+# 1. 다음의 명령어를 친다.
+$ kubectl -n argocd edit configmap argocd-cm
+# 다음의 값을 맨 아래에 추가하여준다.
+data:
+  resource.customizations: |
+    networking.k8s.io/Ingress:
+        health.lua: |
+          hs = {}
+          hs.status = "Healthy"
+          return hs
 
+          
 : <<'END_OF_SCRIPT'
 
 #!/bin/bash
