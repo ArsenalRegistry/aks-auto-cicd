@@ -69,6 +69,7 @@ create_directory_and_commit() {
   if [[ "$source_path" == *"gitops-template" ]]; then
     # Change metadata.name in YAML files
     GENERAL_NAME="$GROUP_NAME"
+    PROJECT_NAME="$PROJECT_NAME"
     for file in "$directory"/*.yaml; do
       if [ -f "$file" ]; then
         echo "Updating metadata.name in $file"
@@ -80,6 +81,7 @@ create_directory_and_commit() {
         if [[ "$file" == *"deployment.yaml" ]]; then
           # Replace ${name} and ${acr_url} in deployment.yaml
           sed -i "s/\${name}/${GENERAL_NAME}/g" "$file"
+          sed -i "s/\${project_name}/${PROJECT_NAME}/g" "$file"
           sed -i "s/\${acr_url}/${AZURE_URL}/g" "$file"
         else
           # Replace ${name} in other YAML files
