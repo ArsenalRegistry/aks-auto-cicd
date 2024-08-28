@@ -92,7 +92,6 @@ create_directory_and_commit() {
 
   elif [[ "$source_path" == *"workflow-template" ]]; then
     echo "in workflow-template"
-    sleep 10s
     # Change metadata.name in YAML files
     GENERAL_NAME="$GROUP_NAME"
     echo "workflow-template edit $file"
@@ -165,7 +164,6 @@ else
   fi
 fi
 echo "step4"
-sleep 5s
 # Step 4: Project Repository에 workflow template import
 WORKFLOW_DIRECTORY=".github/workflows"
 SOURCE_WORKFLOW_PATH="$TEMP_DIR/java-template/workflow-template"
@@ -175,7 +173,6 @@ if ! create_directory_and_commit "$PROJECT_NAME" "$WORKFLOW_DIRECTORY" "$SOURCE_
   exit 1
 fi
 echo "step5"
-sleep 5s
 # Step 5: Project Repository에 src template import
 SOURCE_SRC_PATH="$TEMP_DIR/java-template/src-template"
 if ! create_directory_and_commit "$PROJECT_NAME" "." "$SOURCE_SRC_PATH"; then
