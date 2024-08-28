@@ -80,7 +80,7 @@ END_OF_SCRIPT
 # Argocd URL
 ARGOCD_SERVER="https://20.249.192.164"
 # Access Token
-ACCESS_TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhcmdvY2QiLCJzdWIiOiJhZG1pbjphcGlLZXkiLCJuYmYiOjE3MjQ3NDAwNzIsImlhdCI6MTcyNDc0MDA3MiwianRpIjoiMzBhMDRjYTQtOGQxMi00MjAzLTkwNTAtYzBiYTVlMmI0ZWZmIn0.LJytb0GkqMH0x_2WIvqwxQdp7eleNG1iKlQTi8tU_cI"
+ACCESS_TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhcmdvY2QiLCJzdWIiOiJhZG1pbjphcGlLZXkiLCJuYmYiOjE3MjQ3Mzg0MzUsImlhdCI6MTcyNDczODQzNSwianRpIjoiNWUxYjgwZWItNTMzYS00MjllLWIzZjMtZjZjNDhlNGZlZGUyIn0.EcEEcQzl-iYYhnayWTj_iQEkRnjOHBX0bqq-Y62Vcw8"
 # App Name - backend-java-test
 APP_NAME="backend-java-test"
 PROJECT_NAME="default"
