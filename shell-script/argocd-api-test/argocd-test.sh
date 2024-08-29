@@ -71,10 +71,20 @@ kubectl rollout restart deployment $DEPLOYMENT_NAME -n $NAMESPACE
 
 echo "Restarting Deployment $DEPLOYMENT_NAME..."
 
-# 2-1. Wait for the rollout to complete
-kubectl rollout status deployment $DEPLOYMENT_NAME -n $NAMESPACE
+# 2-1. Wait until the Deployment is ready (READY 1/1)
+echo "Waiting for deployment $DEPLOYMENT_NAME to be ready..."
 
-echo "Deployment $DEPLOYMENT_NAME successfully restarted and all pods are running."
+while true; do
+  READY_REPLICAS=$(kubectl get deployment $DEPLOYMENT_NAME -n $NAMESPACE -o jsonpath='{.status.readyReplicas}')
+
+  if [ "$READY_REPLICAS" == "1" ]; then
+    echo "Deployment $DEPLOYMENT_NAME is ready."
+    break
+  fi
+
+  echo "Deployment $DEPLOYMENT_NAME is not ready yet. Waiting..."
+  sleep 5  # Wait for 5 seconds before checking again
+done
 
 
 # 2-2. Get the external IP of the LoadBalancer service
