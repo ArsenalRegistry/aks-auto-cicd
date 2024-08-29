@@ -8,6 +8,7 @@ CONFIGMAP_PATTERN="argocd-cm"
 DATA_TO_ADD=$(cat <<-EOF
   accounts.admin: apiKey,login
   accounts.admin.tokenTTL: "0s"
+  server.sessionDuration: 24h
   resource.customizations: |
     networking.k8s.io/Ingress:
       health.lua: |
@@ -34,12 +35,14 @@ PASSWORD="New1234!"
 # 0. Azure Login
 echo "Logging in to Azure..."
 az login
-
+sleep 5
 echo "Azure login successful."
 
 # 0-1. Azure Cluster Connect
 echo "Connect in to Azure Cluster..."
 az aks get-credentials --resource-group $RESOURCE_GROUP --name $CLUSTER_NAME
+sleep 5
+kubectl get nodes
 
 # 1. Update ConfigMap
 CONFIGMAP_NAME=$(kubectl get cm -n $NAMESPACE --no-headers -o custom-columns=":metadata.name" | grep $CONFIGMAP_PATTERN | head -n 1)
@@ -62,6 +65,7 @@ DEPLOYMENT_NAME=$(kubectl get deployments -n $NAMESPACE --no-headers -o custom-c
 
 if [ -z "$DEPLOYMENT_NAME" ]; then
   echo "No Deployment found with 'argocd-server' in name in namespace '$NAMESPACE'"
+  sleep 5
   exit 1
 fi
 
@@ -88,10 +92,10 @@ done
 
 
 # 2-2. Get the external IP of the LoadBalancer service
-SERVICE_NAME=$(kubectl get svc -n $NAMESPACE --no-headers -o custom-columns=":metadata.name" | grep "server" | head -n 1)
+SERVICE_NAME=$(kubectl get svc -n $NAMESPACE --no-headers -o custom-columns=":metadata.name" | grep "argo-cd-server" | head -n 1)
 
 if [ -z "$SERVICE_NAME" ]; then
-  echo "No service found with 'server' in name in namespace '$NAMESPACE'"
+  echo "No service found with 'argo-cd-server' in name in namespace '$NAMESPACE'"
   exit 1
 fi
 
@@ -105,9 +109,10 @@ fi
 echo "Found External IP for service '$SERVICE_NAME': $EXTERNAL_IP"
 
 # 3. Generate ArgoCD Access Token
-argocd login 20.249.170.148 --username $USERNAME --password $PASSWORD --insecure
+./argocd login 20.249.170.148 --username $USERNAME --password $PASSWORD --insecure
+sleep 5
 
-ACCESS_TOKEN=$(argocd account generate-token --account $USERNAME)
+ACCESS_TOKEN=$(./argocd account generate-token --account $USERNAME)
 
 # 4. Create Application via ArgoCD API
 read -r -d '' PAYLOAD << EOF
@@ -119,7 +124,7 @@ read -r -d '' PAYLOAD << EOF
     "namespace": "${ARGOCD_NAMESPACE}"
   },
   "spec": {
-    "project": "${PROJECT_NAME}",
+    "project": "${PROJECT_NAME_DEFAULT}",
     "source": {
       "repoURL": "${REPO_URL}",
       "path": "${REPO_PATH}",
