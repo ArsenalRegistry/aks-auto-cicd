@@ -18,19 +18,12 @@ data "terraform_remote_state" "vpc" {
 }
 
 
-provider "argocd" {
-  server_addr = data.terraform_remote_state.vpc.outputs.ip_addr
-  username = "admin"
-  password = var.argocd_admin_password
-  # tls 에러 무시
-  insecure = true
-}
 
 
-resource "argocd_application" "backend-java" {
+resource "argocd_application" "backend_app" {
   metadata {
-    name = "backend-java"
-    namespace = "argocd"
+    name = var.argo_app_name
+    namespace = var.argo_app_namespace
   }
 
   spec {
@@ -41,8 +34,8 @@ resource "argocd_application" "backend-java" {
     }
 
     destination {
-      server = "https://kubernetes.default.svc"
-      namespace = var.destination_namespace
+      server = var.dest_servser
+      namespace = var.dest_namespace
     }
 
     sync_policy {

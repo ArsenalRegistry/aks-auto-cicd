@@ -99,7 +99,7 @@ data "kubernetes_service" "svc" {
 
 resource "kubernetes_namespace" "destination_namespace" {
   metadata {
-    name = var.destination_namespace
+    name = var.dest_namespace
   }
 }
 

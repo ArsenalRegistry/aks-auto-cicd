@@ -3,7 +3,7 @@ variable "argocd_admin_password" {
   type = string
 }
 
-variable "destination_namespace" {
+variable "dest_namespace" {
   default = "hello"
   type = string
 }
@@ -16,6 +16,10 @@ variable "azure_cluster_name" {
   type = string
 }
 
+variable "azure_subscription" {
+  type = string
+}
+
 variable "azure_registry_name" {
   type = string
 }
@@ -25,5 +29,9 @@ variable "github_repo_name" {
 }
 
 variable "github_org" {
+  type = string
+}
+
+variable "github_token" {
   type = string
 }

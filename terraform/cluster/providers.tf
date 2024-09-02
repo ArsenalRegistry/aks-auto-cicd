@@ -1,13 +1,13 @@
 provider "azurerm" {
   features {}
 
-  subscription_id = "7ea86df1-2e18-4abf-ac54-0b241da25a7e"
+  subscription_id = var.azure_subscription
 }
 
 provider "github" {
   #owner = organization
-  owner = "coe-demo-value"
-  token = "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1"
+  owner = var.github_org
+  token = var.github_token
 }
 
 provider "helm" {
