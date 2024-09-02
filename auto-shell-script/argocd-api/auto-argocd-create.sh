@@ -52,6 +52,7 @@ echo "Connect in to Azure Cluster..."
 az aks get-credentials --resource-group $RESOURCE_GROUP --name $CLUSTER_NAME
 sleep 5
 kubectl get nodes
+kubectl create ns $DEST_NAMESPACE
 
 # 1. Update ConfigMap
 CONFIGMAP_NAME=$(kubectl get cm -n $NAMESPACE --no-headers -o custom-columns=":metadata.name" | grep $CONFIGMAP_PATTERN | head -n 1)
