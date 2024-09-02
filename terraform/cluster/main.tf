@@ -25,16 +25,7 @@ terraform {
 }
 
 
-provider "azurerm" {
-  features {}
 
-  subscription_id = 
-}
-
-provider "github" {
-  owner = 
-  token = 
-}
 
 data "azurerm_resource_group" "azure_resource_group" {
   name = var.azure_resource_group_name
@@ -46,25 +37,21 @@ data "azurerm_container_registry" "example" {
 }
 
 
-data "github_repository" "argocd_test" {
-	name = var.github_repository
-}
-
 
 resource "github_actions_secret" "ACR_USERNAME" {
-  repository = data.github_repository.argocd_test.name
+  repository = github_repository.target_repo.name
   secret_name = "ACR_USERNAME"
   plaintext_value = data.azurerm_container_registry.example.admin_username
 }
 
 resource "github_actions_secret" "ACR_PASSWORD" {
-  repository = data.github_repository.argocd_test.name
+  repository = github_repository.target_repo.name
   secret_name = "ACR_PASSWORD"
   plaintext_value = data.azurerm_container_registry.example.admin_password
 }
 
 resource "github_actions_secret" "AZURE_URL" {
-  repository = data.github_repository.argocd_test.name
+  repository = github_repository.target_repo.name
   secret_name = "AZURE_URL"
   plaintext_value = data.azurerm_container_registry.example.login_server
 }
@@ -75,15 +62,6 @@ data "azurerm_kubernetes_cluster" "edu_azure_cluster" {
 }
 
 
-
-provider "helm" {
-  kubernetes {
-    host   = data.azurerm_kubernetes_cluster.edu_azure_cluster.kube_config[0].host
-    client_certificate     = base64decode(data.azurerm_kubernetes_cluster.edu_azure_cluster.kube_config[0].client_certificate)
-    client_key             = base64decode(data.azurerm_kubernetes_cluster.edu_azure_cluster.kube_config[0].client_key)
-    cluster_ca_certificate = base64decode(data.azurerm_kubernetes_cluster.edu_azure_cluster.kube_config[0].cluster_ca_certificate)
-  }
-}
 
 resource "helm_release" "argocd" {
   name = "argocd"
@@ -110,12 +88,7 @@ resource "helm_release" "argocd" {
   }
 }
 
-provider "kubernetes" {
-  host   = data.azurerm_kubernetes_cluster.edu_azure_cluster.kube_config[0].host
-  client_certificate     = base64decode(data.azurerm_kubernetes_cluster.edu_azure_cluster.kube_config[0].client_certificate)
-  client_key             = base64decode(data.azurerm_kubernetes_cluster.edu_azure_cluster.kube_config[0].client_key)
-  cluster_ca_certificate = base64decode(data.azurerm_kubernetes_cluster.edu_azure_cluster.kube_config[0].cluster_ca_certificate)
-}
+
 
 data "kubernetes_service" "svc" {
   metadata {
@@ -136,6 +109,6 @@ output "ip_addr" {
 }
 
 output "http_clone_url" {
-  value = data.github_repository.argocd_test.http_clone_url
+  value = github_repository.target_repo.http_clone_url
 }
 

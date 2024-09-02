@@ -9,22 +9,21 @@ variable "destination_namespace" {
 }
 
 variable "azure_resource_group_name" {
-  default = 
   type = string
 }
 
 variable "azure_cluster_name" {
-  default = 
   type = string
 }
 
 variable "azure_registry_name" {
-  default = 
   type = string
 }
 
-variable "github_repository" {
-  default = 
+variable "github_repo_name" {
   type = string
 }
 
+variable "github_org" {
+  type = string
+}
