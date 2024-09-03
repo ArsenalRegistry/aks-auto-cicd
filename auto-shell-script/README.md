@@ -15,6 +15,14 @@
 
 ```
 
+```
+# 실행 순서
+
+1. auto-template_export_import.sh 파일 실행
+2. github action 실행 후 ACR 확인
+3. auto-argocd-create.sh 파일 실행
+4. argocd 접속 후 app 확인
+```
 
 ```
 # 추가 수정
