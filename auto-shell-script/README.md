@@ -5,7 +5,7 @@
 
 # 1. github organization 생성
 
-# 2. github_token 생성 
+# 2. github_token 생성(계정 토큰) 
 
 # 3. config.env 파일에 프로젝트에 맞게 변수 설정 (토큰, acr 설정값 등..)
 
