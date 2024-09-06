@@ -2,6 +2,7 @@
 # if [ -f config.env ]; then
 #     export $(grep -v '^#' config.env | xargs)
 # fi
+# .env 파일을 읽어와서 환경 변수를 설정합니다.
 if [ -f config.env ]; then
     while IFS= read -r line; do
         # 주석과 빈 줄을 무시합니다.
@@ -10,6 +11,11 @@ if [ -f config.env ]; then
             var_name=$(echo "$line" | sed -e 's/^TF_VAR_//g' | cut -d '=' -f 1)
             # 값에서 쌍따옴표 제거
             var_value=$(echo "$line" | cut -d '=' -f 2- | sed 's/^"\(.*\)"$/\1/')
+            
+            # var_name과 var_value 확인용 출력 (디버깅용)
+            echo "var_name: $var_name, var_value: $var_value"
+
+            # CONFIGMAP_PATTERN 변수와 다른 변수들을 처리하기 위해 조건 추가
             export "$var_name=$var_value"
         fi
     done < config.env
@@ -198,15 +204,3 @@ fi
 rm -rf "$TEMP_DIR"
 
 echo "All tasks completed successfully."
-
-# # 필요한 패키지 설치
-# pip install pynacl requests
-# pip install python-dotenv
-# # create_secret.py 스크립트 실행
-# python ./create_secret.py
-# if [ $? -ne 0 ]; then
-#   echo "Failed to execute create_secret.py"
-#   exit 1
-# fi
-
-# echo "create_secret.py executed successfully."

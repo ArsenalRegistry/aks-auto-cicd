@@ -21,40 +21,6 @@ if [ -f config.env ]; then
 fi
 
 
-# set -e
-
-# Variables
-# NAMESPACE="argocd"
-# CONFIGMAP_PATTERN="argocd-cm"
-# DATA_TO_ADD=$(cat <<-EOF
-#   accounts.admin: apiKey,login
-#   accounts.admin.tokenTTL: "0s"
-#   server.sessionDuration: 24h
-#   resource.customizations: |
-#     networking.k8s.io/Ingress:
-#       health.lua: |
-#         hs = {}
-#         hs.status = "Healthy"
-#         return hs
-# EOF
-# )
-
-# ARGOCD_SERVER="https://20.214.196.115"
-# APP_NAME="backend-java-test"
-# PROJECT_NAME="default"
-# REPO_URL="https://github.com/coe-demo-value/coe-demo-value-ops"
-# REPO_PATH="charts/demo-value-project"
-# TARGET_REVISION="HEAD"
-# DEST_SERVER="https://kubernetes.default.svc"
-# DEST_NAMESPACE="coe-demo-value"
-# ARGOCD_NAMESPACE="argocd"
-# RESOURCE_GROUP="ict-coe"
-# CLUSTER_NAME="ict-coe-cluster"
-# USERNAME="admin"
-# PASSWORD="New1234!"
-# SERVER_NAME_GREP="argo-cd-server"
-
-
 # 0. Azure Login
 echo "Logging in to Azure..."
 az login
@@ -145,67 +111,3 @@ fi
 ARGOCD_SERVER="https://"$EXTERNAL_IP 
 echo "Found External IP for service '$SERVICE_NAME': $EXTERNAL_IP"
 sleep 5
-# # 3. Generate ArgoCD Access Token
-
-# # ./argocd login $EXTERNAL_IP --username $USERNAME --password $PASSWORD --insecure
-# # # ./argocd login 20.214.196.115 --username admin --password New1234! --insecure
-# # echo "argocd login"
-
-
-# # ACCESS_TOKEN=$(./argocd account generate-token --account $USERNAME) 
-# # echo "ACCESS_TOKEN": "$ACCESS_TOKEN"
-# # echo "APP_NAME: $APP_NAME"
-# # echo "ARGOCD_NAMESPACE: $ARGOCD_NAMESPACE"
-# # echo "PROJECT_NAME: $PROJECT_NAME"
-# # echo "REPO_URL: $REPO_URL"
-# # echo "REPO_PATH: $REPO_PATH"
-# # echo "TARGET_REVISION: $TARGET_REVISION"
-# # echo "DEST_SERVER: $DEST_SERVER"
-# # echo "DEST_NAMESPACE: $DEST_NAMESPACE"
-# # sleep 5
-# # # 4. Create Application via ArgoCD API
-# # # JSON 데이터 생성
-
-# # # JSON 데이터 생성
-# # PAYLOAD=$(cat <<EOF
-# # {
-# #   "apiVersion": "argoproj.io/v1alpha1",
-# #   "kind": "Application",
-# #   "metadata": {
-# #     "name": "${APP_NAME}",
-# #     "namespace": "${ARGOCD_NAMESPACE}"
-# #   },
-# #   "spec": {
-# #     "project": "${PROJECT_NAME_DEFAULT}",
-# #     "source": {
-# #       "repoURL": "${REPO_URL}",
-# #       "path": "${REPO_PATH}",
-# #       "targetRevision": "${TARGET_REVISION}"
-# #     },
-# #     "destination": {
-# #       "server": "${DEST_SERVER}",
-# #       "namespace": "${DEST_NAMESPACE}"
-# #     },
-# #     "syncPolicy": {
-# #       "automated": {
-# #         "prune": true,
-# #         "selfHeal": true
-# #       }
-# #     }
-# #   }
-# # }
-# # EOF
-# # )
-
-# # # JSON 데이터 확인
-# # echo "$PAYLOAD"
-# # sleep 5
-
-# # curl -k -X POST "${ARGOCD_SERVER}/api/v1/applications" \
-# #   -H "Content-Type: application/json" \
-# #   -H "Authorization: Bearer ${ACCESS_TOKEN}" \
-# #   -d "${PAYLOAD}"
-
-# # echo "ArgoCD Application ${APP_NAME} created successfully"
-
-# # sleep 10
