@@ -2,12 +2,26 @@
 
 
 # .env 파일을 읽어와서 환경 변수를 설정합니다.
-if [ -f ../config.env ]; then
-    export $(grep -v '^#' ../config.env | xargs)
+if [ -f config.env ]; then
+    while IFS= read -r line; do
+        # 주석과 빈 줄을 무시합니다.
+        if [[ ! "$line" =~ ^# && ! -z "$line" ]]; then
+            # TF_VAR_ 접두사 제거
+            var_name=$(echo "$line" | sed -e 's/^TF_VAR_//g' | cut -d '=' -f 1)
+            # 값에서 쌍따옴표 제거
+            var_value=$(echo "$line" | cut -d '=' -f 2- | sed 's/^"\(.*\)"$/\1/')
+            
+            # var_name과 var_value 확인용 출력 (디버깅용)
+            # echo "var_name: $var_name, var_value: $var_value"
+
+            # CONFIGMAP_PATTERN 변수와 다른 변수들을 처리하기 위해 조건 추가
+            export "$var_name=$var_value"
+        fi
+    done < config.env
 fi
 
 
-set -e
+# set -e
 
 # Variables
 # NAMESPACE="argocd"
@@ -49,7 +63,7 @@ echo "Azure login successful."
 
 # 0-1. Azure Cluster Connect
 echo "Connect in to Azure Cluster..."
-az aks get-credentials --resource-group $RESOURCE_GROUP --name $CLUSTER_NAME
+az aks get-credentials --resource-group $AZURE_RESOURCE_GROUP_NAME --name $AZURE_ClUSTER_NAME
 sleep 5
 kubectl get nodes
 # kubectl create ns $DEST_NAMESPACE
@@ -131,67 +145,67 @@ fi
 ARGOCD_SERVER="https://"$EXTERNAL_IP 
 echo "Found External IP for service '$SERVICE_NAME': $EXTERNAL_IP"
 sleep 5
-# 3. Generate ArgoCD Access Token
+# # 3. Generate ArgoCD Access Token
 
-./argocd login $EXTERNAL_IP --username $USERNAME --password $PASSWORD --insecure
-# ./argocd login 20.214.196.115 --username admin --password New1234! --insecure
-echo "argocd login"
+# # ./argocd login $EXTERNAL_IP --username $USERNAME --password $PASSWORD --insecure
+# # # ./argocd login 20.214.196.115 --username admin --password New1234! --insecure
+# # echo "argocd login"
 
 
-ACCESS_TOKEN=$(./argocd account generate-token --account $USERNAME) 
-echo "ACCESS_TOKEN": "$ACCESS_TOKEN"
-echo "APP_NAME: $APP_NAME"
-echo "ARGOCD_NAMESPACE: $ARGOCD_NAMESPACE"
-echo "PROJECT_NAME: $PROJECT_NAME"
-echo "REPO_URL: $REPO_URL"
-echo "REPO_PATH: $REPO_PATH"
-echo "TARGET_REVISION: $TARGET_REVISION"
-echo "DEST_SERVER: $DEST_SERVER"
-echo "DEST_NAMESPACE: $DEST_NAMESPACE"
-sleep 5
-# 4. Create Application via ArgoCD API
-# JSON 데이터 생성
+# # ACCESS_TOKEN=$(./argocd account generate-token --account $USERNAME) 
+# # echo "ACCESS_TOKEN": "$ACCESS_TOKEN"
+# # echo "APP_NAME: $APP_NAME"
+# # echo "ARGOCD_NAMESPACE: $ARGOCD_NAMESPACE"
+# # echo "PROJECT_NAME: $PROJECT_NAME"
+# # echo "REPO_URL: $REPO_URL"
+# # echo "REPO_PATH: $REPO_PATH"
+# # echo "TARGET_REVISION: $TARGET_REVISION"
+# # echo "DEST_SERVER: $DEST_SERVER"
+# # echo "DEST_NAMESPACE: $DEST_NAMESPACE"
+# # sleep 5
+# # # 4. Create Application via ArgoCD API
+# # # JSON 데이터 생성
 
-# JSON 데이터 생성
-PAYLOAD=$(cat <<EOF
-{
-  "apiVersion": "argoproj.io/v1alpha1",
-  "kind": "Application",
-  "metadata": {
-    "name": "${APP_NAME}",
-    "namespace": "${ARGOCD_NAMESPACE}"
-  },
-  "spec": {
-    "project": "${PROJECT_NAME_DEFAULT}",
-    "source": {
-      "repoURL": "${REPO_URL}",
-      "path": "${REPO_PATH}",
-      "targetRevision": "${TARGET_REVISION}"
-    },
-    "destination": {
-      "server": "${DEST_SERVER}",
-      "namespace": "${DEST_NAMESPACE}"
-    },
-    "syncPolicy": {
-      "automated": {
-        "prune": true,
-        "selfHeal": true
-      }
-    }
-  }
-}
-EOF
-)
+# # # JSON 데이터 생성
+# # PAYLOAD=$(cat <<EOF
+# # {
+# #   "apiVersion": "argoproj.io/v1alpha1",
+# #   "kind": "Application",
+# #   "metadata": {
+# #     "name": "${APP_NAME}",
+# #     "namespace": "${ARGOCD_NAMESPACE}"
+# #   },
+# #   "spec": {
+# #     "project": "${PROJECT_NAME_DEFAULT}",
+# #     "source": {
+# #       "repoURL": "${REPO_URL}",
+# #       "path": "${REPO_PATH}",
+# #       "targetRevision": "${TARGET_REVISION}"
+# #     },
+# #     "destination": {
+# #       "server": "${DEST_SERVER}",
+# #       "namespace": "${DEST_NAMESPACE}"
+# #     },
+# #     "syncPolicy": {
+# #       "automated": {
+# #         "prune": true,
+# #         "selfHeal": true
+# #       }
+# #     }
+# #   }
+# # }
+# # EOF
+# # )
 
-# JSON 데이터 확인
-echo "$PAYLOAD"
-sleep 5
+# # # JSON 데이터 확인
+# # echo "$PAYLOAD"
+# # sleep 5
 
-curl -k -X POST "${ARGOCD_SERVER}/api/v1/applications" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer ${ACCESS_TOKEN}" \
-  -d "${PAYLOAD}"
+# # curl -k -X POST "${ARGOCD_SERVER}/api/v1/applications" \
+# #   -H "Content-Type: application/json" \
+# #   -H "Authorization: Bearer ${ACCESS_TOKEN}" \
+# #   -d "${PAYLOAD}"
 
-echo "ArgoCD Application ${APP_NAME} created successfully"
+# # echo "ArgoCD Application ${APP_NAME} created successfully"
 
-sleep 10
+# # sleep 10
