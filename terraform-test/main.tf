@@ -10,6 +10,16 @@ terraform {
     }
   }
 }
+# Key Vault에서 GitHub 토큰 가져오기
+data "azurerm_key_vault" "key_vault" {
+  name                = var.KEY_VAULT_NAME
+  resource_group_name = var.AZURE_RESOURCE_GROUP_NAME
+}
+
+data "azurerm_key_vault_secret" "github_token" {
+  name         = "GITHUB-TOKEN"
+  key_vault_id = data.azurerm_key_vault.key_vault.id
+}
 
 data "kubernetes_service" "argocd" {
   metadata {
@@ -25,6 +35,9 @@ output "argocd_server_ip" {
 
 resource "null_resource" "run_script" {
   provisioner "local-exec" {
+    environment = {
+      GITHUB_TOKEN = data.azurerm_key_vault_secret.github_token.value
+    }
     command = "sh ${path.module}/auto-repo-setting.sh"
     working_dir = "${path.module}"  # 쉘 스크립트가 위치한 디렉토리
   }
@@ -43,7 +56,8 @@ resource "github_actions_secret" "ACTION_TOKEN" {
   depends_on = [null_resource.run_script]
   repository = var.PROJECT_NAME
   secret_name = "ACTION_TOKEN"
-  plaintext_value = var.GITHUB_TOKEN
+  # plaintext_value = var.GITHUB_TOKEN
+  plaintext_value = data.azurerm_key_vault_secret.github_token.value
 }
 resource "github_actions_secret" "ACR_USERNAME" {
   depends_on = [null_resource.run_script]
@@ -66,15 +80,15 @@ resource "github_actions_secret" "AZURE_URL" {
   plaintext_value = data.azurerm_container_registry.example.login_server
 }
 
-# github action
+# # github action
 
-resource "null_resource" "github_actions_script" {
-  depends_on = [github_actions_secret.AZURE_URL]
-  provisioner "local-exec" {
-    command = "sh ${path.module}/auto-action-running.sh"
-    working_dir = "${path.module}"  # 쉘 스크립트가 위치한 디렉토리
-  }
-}
+# resource "null_resource" "github_actions_script" {
+#   depends_on = [github_actions_secret.AZURE_URL]
+#   provisioner "local-exec" {
+#     command = "sh ${path.module}/auto-action-running.sh"
+#     working_dir = "${path.module}"  # 쉘 스크립트가 위치한 디렉토리
+#   }
+# }
 
 
 # argocd
@@ -85,43 +99,43 @@ data "azurerm_kubernetes_cluster" "aks" {
 
 
 
-resource "null_resource" "run_argocd_script" {
-  depends_on = [null_resource.github_actions_script]
-  provisioner "local-exec" {
-    command = "sh ${path.module}/auto-argocd-setting.sh"
-    working_dir = "${path.module}"  # 쉘 스크립트가 위치한 디렉토리
-  }
-}
+# resource "null_resource" "run_argocd_script" {
+#   depends_on = [null_resource.github_actions_script]
+#   provisioner "local-exec" {
+#     command = "sh ${path.module}/auto-argocd-setting.sh"
+#     working_dir = "${path.module}"  # 쉘 스크립트가 위치한 디렉토리
+#   }
+# }
 
 
-resource "argocd_application" "backend-app" {
-  depends_on = [null_resource.run_argocd_script]
-  metadata {
-    name      = var.APP_NAME
-    namespace = var.NAMESPACE
-  }
-  spec {
+# resource "argocd_application" "backend-app" {
+#   depends_on = [null_resource.run_argocd_script]
+#   metadata {
+#     name      = var.APP_NAME
+#     namespace = var.NAMESPACE
+#   }
+#   spec {
 
-    project = var.PROJECT_NAME_DEFAULT
+#     project = var.PROJECT_NAME_DEFAULT
     
-    source {
-      repo_url        = var.REPO_URL
-      # repo_url        = data.terraform_remote_state.vpc.outputs.http_clone_url
-      path            = var.REPO_PATH
-      target_revision = var.TARGET_REVISION
-    }
+#     source {
+#       repo_url        = var.REPO_URL
+#       # repo_url        = data.terraform_remote_state.vpc.outputs.http_clone_url
+#       path            = var.REPO_PATH
+#       target_revision = var.TARGET_REVISION
+#     }
 
-    destination {
-      server    = var.DEST_SERVER
-      namespace = var.DEST_NAMESPACE
-    }
+#     destination {
+#       server    = var.DEST_SERVER
+#       namespace = var.DEST_NAMESPACE
+#     }
 
-    sync_policy {
-      automated {
-        prune     = true
-        self_heal = true
-        allow_empty = true
-      }
-    }
-  }
-}
+#     sync_policy {
+#       automated {
+#         prune     = true
+#         self_heal = true
+#         allow_empty = true
+#       }
+#     }
+#   }
+# }

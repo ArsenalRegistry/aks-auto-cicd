@@ -1,5 +1,9 @@
-variable "GITHUB_TOKEN" {
-  description = "GitHub Personal Access Token"
+# variable "GITHUB_TOKEN" {
+#   description = "GitHub Personal Access Token"
+#   type        = string
+# }
+variable "KEY_VAULT_NAME" {
+  description = "The KEY_VAULT name for your azure"
   type        = string
 }
 
