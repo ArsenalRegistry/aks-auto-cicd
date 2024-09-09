@@ -21,6 +21,11 @@ data "azurerm_key_vault_secret" "github_token" {
   key_vault_id = data.azurerm_key_vault.key_vault.id
 }
 
+output "github_token" {
+  value = data.azurerm_key_vault_secret.github_token.value
+  sensitive = true
+}
+
 data "kubernetes_service" "argocd" {
   metadata {
     name = "${var.ARGOCD_INITIAL}-${var.SERVER_NAME_GREP}"
@@ -80,8 +85,7 @@ resource "github_actions_secret" "AZURE_URL" {
   plaintext_value = data.azurerm_container_registry.example.login_server
 }
 
-# # github action
-
+# github action
 resource "null_resource" "github_actions_script" {
   depends_on = [github_actions_secret.AZURE_URL]
   provisioner "local-exec" {
