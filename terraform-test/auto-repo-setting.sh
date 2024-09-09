@@ -51,6 +51,20 @@ create_repository() {
   fi
   return 0
 }
+perform_sed_replacement() {
+    local file="$1"
+    local search_string="$2"
+    local replacement_string="$3"
+    local os="$4"
+
+    if [ "$os" == "Darwin" ]; then
+        # macOS에서 sed 명령어 실행
+        sed -i '' "s/${search_string}/${replacement_string}/g" "$file"
+    else
+        # Linux 및 Windows Git Bash에서 sed 명령어 실행
+        sed -i "s/${search_string}/${replacement_string}/g" "$file"
+    fi
+}
 
 # 디렉토리 생성 및 import 함수
 create_directory_and_commit() {
@@ -83,29 +97,36 @@ create_directory_and_commit() {
     return 1
   fi
   
+  # 운영 체제 확인
+  os=$(uname)
+
   # Check if the source path ends with "gitops-template" or "workflow-template"
   if [[ "$source_path" == *"gitops-template" ]]; then
     # Change metadata.name in YAML files
     GENERAL_NAME="$GROUP_NAME"
     PROJECT_NAME="$PROJECT_NAME"
     for file in "$directory"/*.yaml; do
-      if [ -f "$file" ]; then
-        echo "Updating metadata.name in $file"
-        # Skip kustomization.yaml
-        if [[ "$file" == *"kustomization.yaml" ]]; then
-          echo "Skipping $file"
-          continue
+        if [ -f "$file" ]; then
+            echo "Updating metadata.name in $file"
+
+            # kustomization.yaml 파일은 건너뜁니다.
+            if [[ "$file" == *"kustomization.yaml" ]]; then
+                echo "Skipping $file"
+                continue
+            fi
+
+            # deployment.yaml 파일의 경우
+            if [[ "$file" == *"deployment.yaml" ]]; then
+                echo "Processing $file"
+                perform_sed_replacement "$file" '\${name}' "$GENERAL_NAME" "$os"
+                perform_sed_replacement "$file" '\${project_name}' "$PROJECT_NAME" "$os"
+                perform_sed_replacement "$file" '\${acr_url}' "$AZURE_URL" "$os"
+            else
+                # 다른 YAML 파일의 경우
+                echo "Processing $file"
+                perform_sed_replacement "$file" '\${name}' "$GENERAL_NAME" "$os"
+            fi
         fi
-        if [[ "$file" == *"deployment.yaml" ]]; then
-          # Replace ${name} and ${acr_url} in deployment.yaml
-          sed -i "s/\${name}/${GENERAL_NAME}/g" "$file"
-          sed -i "s/\${project_name}/${PROJECT_NAME}/g" "$file"
-          sed -i "s/\${acr_url}/${AZURE_URL}/g" "$file"
-        else
-          # Replace ${name} in other YAML files
-          sed -i "s/\${name}/${GENERAL_NAME}/g" "$file"
-        fi
-      fi
     done
 
   elif [[ "$source_path" == *"workflow-template" ]]; then
@@ -113,14 +134,16 @@ create_directory_and_commit() {
     # Change metadata.name in YAML files
     GENERAL_NAME="$GROUP_NAME"
     echo "workflow-template edit $file"
+    # .yml 파일을 처리합니다.
     for file in "$directory"/*.yml; do
-      if [ -f "$file" ]; then
-        if [[ "$file" == *"docker-image.yml" ]]; then
-          # Replace ${name} and ${acr_url} in docker-image.yml
-          sed -i "s/\${github.organization.name}/${GENERAL_NAME}/g" "$file"
+        if [ -f "$file" ]; then
+            if [[ "$file" == *"docker-image.yml" ]]; then
+                echo "Processing $file"
+                # Replace ${github.organization.name} in docker-image.yml
+                perform_sed_replacement "$file" '\${github.organization.name}' "$GENERAL_NAME" "$os"
+            fi
         fi
-      fi
-    done
+    done    
   fi
 
 
