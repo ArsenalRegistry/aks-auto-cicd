@@ -73,7 +73,7 @@ variable "NAMESPACE" {
 variable "SERVER_NAME_GREP" {
   type = string
 }
-variable "ARGOCD_INITAL" {
+variable "ARGOCD_INITIAL" {
   type = string
 }
 variable "ARGOCD_USERNAME" {
