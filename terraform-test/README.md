@@ -20,8 +20,9 @@ terraform
 cd terraform-test
 
 # 2. 변수 설정 및 확인 및 terraform 실행(init & apply)
-# 2-1. 변수 확인: yes / terraform apply: yes 입력필요
 source load-env.sh
+
+# 2-1. 변수 확인: yes / terraform apply: yes 입력필요
 
 # 추가 사항
 # 진행도중 az login 으로 인한 인터넷 브라우저에 로그인 선택 창 뜨며, 아이디에 맞게 클릭
