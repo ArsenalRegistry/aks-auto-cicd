@@ -136,13 +136,5 @@ resource "argocd_application" "backend-app" {
       server    = var.DEST_SERVER
       namespace = var.DEST_NAMESPACE
     }
-
-    sync_policy {
-      automated {
-        prune     = true
-        self_heal = true
-        allow_empty = true
-      }
-    }
   }
 }
