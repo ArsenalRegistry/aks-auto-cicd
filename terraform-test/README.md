@@ -20,7 +20,7 @@ terraform
 cd terraform-test
 
 # 2. 변수 설정 및 확인 및 terraform 실행(init & apply)
-source load-env.sh
+source scripts/load-env.sh
 
 # 2-1. 변수 확인: yes / terraform apply: yes 입력필요
 

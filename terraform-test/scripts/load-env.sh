@@ -9,7 +9,7 @@ temp_file=$(mktemp)
 if [ -f config.env ]; then
     error_found=false  # 오류 여부를 추적하는 플래그
 
-    while IFS= read -r line; do
+    while IFS= read -r line || [[ -n "$line" ]]; do
         # 주석과 빈 줄을 무시합니다.
         if [[ ! "$line" =~ ^# && ! -z "$line" ]]; then
             # TF_VAR_ 접두사 제거
@@ -40,7 +40,7 @@ if [ -f config.env ]; then
 
     # 모든 변수가 올바르게 설정되었는지 확인
     echo "모든 변수가 다음과 같이 설정되었습니다:"
-    grep -v '^#' config.env
+    # grep -v '^#' config.env
 
     # 사용자 확인 (yes/no)
     read -p "이 값들이 맞습니까? (yes/no): " answer

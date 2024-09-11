@@ -88,13 +88,13 @@ resource "github_actions_secret" "AZURE_URL" {
 
 # github action
 resource "terraform_data" "github_actions_script" {
-  triggers_replace = [github_actions_secret.AZURE_URL.updated_at]
-
+  # triggers_replace = [github_actions_secret.AZURE_URL.updated_at]
+  depends_on = [github_actions_secret.AZURE_URL]
   provisioner "local-exec" {
     environment = {
       GITHUB_TOKEN = nonsensitive(data.azurerm_key_vault_secret.github_token.value)
     }
-    command = "chmod +x ${path.module}/auto-action-running.sh && ${path.module}/auto-action-running.sh"
+    command = "chmod +x ${path.module}/auto-action-running.sh && sh ${path.module}/auto-action-running.sh"
     working_dir = "${path.module}/scripts"
   }
 }
@@ -146,8 +146,13 @@ resource "argocd_application" "backend-app" {
 
 resource "terraform_data" "run_argocd_sync" {
   triggers_replace = [argocd_application.backend-app.status]
-
   provisioner "local-exec" {
-    command = "chmod +x ${path.module}/scripts/auto-argocd-sync.sh && ${path.module}/scripts/auto-argocd-sync.sh ${var.APP_NAME} ${var.ARGOCD_PASSWORD} ${data.kubernetes_service.argocd.status[0].load_balancer[0].ingress[0].ip}"
+    environment = {
+      APP_NAME = var.APP_NAME
+      PASSWORD = var.ARGOCD_PASSWORD
+      SERVER_IP = data.kubernetes_service.argocd.status[0].load_balancer[0].ingress[0].ip
+    }
+    command = "chmod +x ${path.module}/auto-argocd-sync.sh && sh ${path.module}/auto-argocd-sync.sh"
+    working_dir = "${path.module}/scripts"  # 쉘 스크립트가 위치한 디렉토리
   }
 }
