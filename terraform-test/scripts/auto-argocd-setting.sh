@@ -47,7 +47,7 @@ echo "Found ConfigMap: $CONFIGMAP_NAME"
 kubectl patch cm $CONFIGMAP_NAME -n $NAMESPACE --type merge -p '{
   "data": {
     "accounts.admin": "apiKey,login",
-    "accounts.admin.tokenTTL": "0s",
+    "accounts.admin.tokenTTL": "1h",
     "server.sessionDuration": "24h",
     "resource.customizations": "networking.k8s.io/Ingress:\n  health.lua: |\n    hs = {}\n    hs.status = \"Healthy\"\n    return hs"
   }

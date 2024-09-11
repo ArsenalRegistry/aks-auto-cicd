@@ -38,13 +38,13 @@ output "argocd_server_ip" {
 }
 
 
-resource "null_resource" "run_script" {
+resource "terraform_data" "run_script" {
   provisioner "local-exec" {
     environment = {
       GITHUB_TOKEN = nonsensitive(data.azurerm_key_vault_secret.github_token.value)
     }
     command = "sh ${path.module}/auto-repo-setting.sh"
-    working_dir = "${path.module}"  # 쉘 스크립트가 위치한 디렉토리
+    working_dir = "${path.module}/scripts"  # 쉘 스크립트가 위치한 디렉토리
   }
 }
 
@@ -58,42 +58,44 @@ data "azurerm_container_registry" "example" {
 }
 
 resource "github_actions_secret" "ACTION_TOKEN" {
-  depends_on = [null_resource.run_script]
+  depends_on = [terraform_data.run_script]
   repository = var.PROJECT_NAME
   secret_name = "ACTION_TOKEN"
   # plaintext_value = var.GITHUB_TOKEN
   plaintext_value = data.azurerm_key_vault_secret.github_token.value
 }
+
 resource "github_actions_secret" "ACR_USERNAME" {
-  depends_on = [null_resource.run_script]
+  depends_on = [terraform_data.run_script]
   repository = var.PROJECT_NAME
   secret_name = "ACR_USERNAME"
   plaintext_value = data.azurerm_container_registry.example.admin_username
 }
 
 resource "github_actions_secret" "ACR_PASSWORD" {
-  depends_on = [null_resource.run_script]
+  depends_on = [terraform_data.run_script]
   repository = var.PROJECT_NAME
   secret_name = "ACR_PASSWORD"
   plaintext_value = data.azurerm_container_registry.example.admin_password
 }
 
 resource "github_actions_secret" "AZURE_URL" {
-  depends_on = [null_resource.run_script]
+  depends_on = [terraform_data.run_script]
   repository = var.PROJECT_NAME
   secret_name = "AZURE_URL"
   plaintext_value = data.azurerm_container_registry.example.login_server
 }
 
 # github action
-resource "null_resource" "github_actions_script" {
-  depends_on = [github_actions_secret.AZURE_URL]
+resource "terraform_data" "github_actions_script" {
+  triggers_replace = [github_actions_secret.AZURE_URL.updated_at]
+
   provisioner "local-exec" {
     environment = {
       GITHUB_TOKEN = nonsensitive(data.azurerm_key_vault_secret.github_token.value)
     }
-    command = "sh ${path.module}/auto-action-running.sh"
-    working_dir = "${path.module}"  # 쉘 스크립트가 위치한 디렉토리
+    command = "chmod +x ${path.module}/auto-action-running.sh && ${path.module}/auto-action-running.sh"
+    working_dir = "${path.module}/scripts"
   }
 }
 
@@ -106,17 +108,18 @@ data "azurerm_kubernetes_cluster" "aks" {
 
 
 
-resource "null_resource" "run_argocd_script" {
-  depends_on = [null_resource.github_actions_script]
+resource "terraform_data" "run_argocd_script" {
+  triggers_replace = [terraform_data.github_actions_script.id]
+
   provisioner "local-exec" {
-    command = "sh ${path.module}/auto-argocd-setting.sh"
-    working_dir = "${path.module}"  # 쉘 스크립트가 위치한 디렉토리
+    command = "chmod +x ${path.module}/auto-argocd-setting.sh && sh ${path.module}/auto-argocd-setting.sh"
+    working_dir = "${path.module}/scripts"  # 쉘 스크립트가 위치한 디렉토리
   }
 }
 
 
 resource "argocd_application" "backend-app" {
-  depends_on = [null_resource.run_argocd_script]
+  depends_on = [terraform_data.run_argocd_script]
   metadata {
     name      = var.APP_NAME
     namespace = var.NAMESPACE
@@ -136,5 +139,15 @@ resource "argocd_application" "backend-app" {
       server    = var.DEST_SERVER
       namespace = var.DEST_NAMESPACE
     }
+
+  
+  }
+}
+
+resource "terraform_data" "run_argocd_sync" {
+  triggers_replace = [argocd_application.backend-app.status]
+
+  provisioner "local-exec" {
+    command = "chmod +x ${path.module}/scripts/auto-argocd-sync.sh && ${path.module}/scripts/auto-argocd-sync.sh ${var.APP_NAME} ${var.ARGOCD_PASSWORD} ${data.kubernetes_service.argocd.status[0].load_balancer[0].ingress[0].ip}"
   }
 }

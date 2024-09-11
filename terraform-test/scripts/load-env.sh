@@ -42,12 +42,12 @@ if [ -f config.env ]; then
     echo "모든 변수가 다음과 같이 설정되었습니다:"
     grep -v '^#' config.env
 
-    # 사용자 확인 (yes/no)
-    read -p "이 값들이 맞습니까? (yes/no): " answer
+    # # 사용자 확인 (yes/no)
+    read "answer?이 값들이 맞습니까? (yes/no): "
     if [[ "$answer" != "yes" ]]; then
         echo "사용자에 의해 스크립트가 중단되었습니다."
         # 스크립트 끝에서 대기 상태 유지 (터미널 종료 방지)
-        read -p "Press any key to continue..."        
+        read "?Press any key to continue..."        
         rm -f "$temp_file"  # 임시 파일 삭제
         exit 1
     fi
