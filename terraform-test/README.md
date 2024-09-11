@@ -1,5 +1,9 @@
 ```
-# 필요 조건
+# 필수 조건
+# AKS, ACR, ArgoCD(LoadBalancer 타입), GitHub Organization 준비완료 상태
+
+
+# 실행 조건
 
 # terraform 설치 및 환경변수 세팅 필요
 # 1. 경로에서 각 환경에 맞게 설치
@@ -29,5 +33,5 @@ source scripts/load-env.sh
 # 터미널 마지막에 뜨는 argocd_server_ip 에 접속 후 확인
 
 # 999. 다시 삭제할 경우 해당 경로에서 아래 명령어 실행
-sh auto-repo-delete.sh
+sh scripts/auto-repo-delete.sh
 ```
