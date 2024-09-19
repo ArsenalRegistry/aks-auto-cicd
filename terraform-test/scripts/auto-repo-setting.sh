@@ -118,15 +118,12 @@ create_directory_and_commit() {
             # deployment.yaml 파일의 경우
             if [[ "$file" == *"deployment.yaml" ]]; then
                 echo "Processing $file"
-                perform_sed_replacement "$file" '\${name}' "$GENERAL_NAME" "$os"
                 perform_sed_replacement "$file" '\${project_name}' "$PROJECT_NAME" "$os"
                 perform_sed_replacement "$file" '\${acr_url}' "$AZURE_URL" "$os"
-            else
-                # 다른 YAML 파일의 경우
-                echo "Processing $file"
-                perform_sed_replacement "$file" '\${name}' "$GENERAL_NAME" "$os"
-                perform_sed_replacement "$file" '\${namespace}' "$NAMESPACE" "$os"
             fi
+            
+            perform_sed_replacement "$file" '\${name}' "$GENERAL_NAME" "$os"
+            perform_sed_replacement "$file" '\${namespace}' "$NAMESPACE" "$os"
         fi
     done
 
