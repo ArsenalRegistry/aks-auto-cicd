@@ -125,6 +125,7 @@ create_directory_and_commit() {
                 # 다른 YAML 파일의 경우
                 echo "Processing $file"
                 perform_sed_replacement "$file" '\${name}' "$GENERAL_NAME" "$os"
+                perform_sed_replacement "$file" '\${namespace}' "$NAMESPACE" "$os"
             fi
         fi
     done
