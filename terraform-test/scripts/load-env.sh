@@ -10,12 +10,14 @@ if [ -f config.env ]; then
     error_found=false  # 오류 여부를 추적하는 플래그
 
     while IFS= read -r line || [[ -n "$line" ]]; do
+        # 주석(#) 이후 부분과 좌우 공백을 제거한 깨끗한 라인
+        clean_line=$(echo "$line" | sed 's/[[:space:]]*#.*//' | xargs)    
         # 주석과 빈 줄을 무시합니다.
-        if [[ ! "$line" =~ ^# && ! -z "$line" ]]; then
+        if [[ ! "$clean_line" =~ ^# && ! -z "$line" ]]; then
             # TF_VAR_ 접두사 제거
-            var_name=$(echo "$line" | sed -e 's/^TF_VAR_//g' | cut -d '=' -f 1)
+            var_name=$(echo "$clean_line" | sed -e 's/^TF_VAR_//g' | cut -d '=' -f 1)
             # 값에서 쌍따옴표 제거
-            var_value=$(echo "$line" | cut -d '=' -f 2- | sed 's/^"\(.*\)"$/\1/')
+            var_value=$(echo "$clean_line" | cut -d '=' -f 2- | sed 's/^"\(.*\)"$/\1/')
             
             # 빈값 체크
             if [[ -z "$var_value" ]]; then

@@ -27,7 +27,7 @@ fi
 # 레포지토리 존재 여부 체크 함수
 repository_exists() {
   local repo_name=$1
-  response=$(curl -k -s -w "%{http_code}" -H "Authorization: token $GITHUB_TOKEN" "$BASE_API_URL/repos/$TARGET_ORG/$repo_name")
+  response=$(curl -k -s -w "%{http_code}" -H "Authorization: token $GITHUB_TOKEN" "$BASE_API_URL/repos/$GROUP_NAME/$repo_name")
   http_code=$(echo "$response" | tail -c 4)
   if [ "$http_code" -eq 200 ]; then
     return 0  # Repository exists
@@ -39,7 +39,7 @@ repository_exists() {
 # 레포지토리 생성 함수
 create_repository() {
   local repo_name=$1
-  response=$(curl -k -s -w "\n%{http_code}" -H "Authorization: token $GITHUB_TOKEN" -d '{"name":"'"$repo_name"'"}' "$BASE_API_URL/orgs/$TARGET_ORG/repos")
+  response=$(curl -k -s -w "\n%{http_code}" -H "Authorization: token $GITHUB_TOKEN" -d '{"name":"'"$repo_name"'","private": true}' "$BASE_API_URL/orgs/$GROUP_NAME/repos")
   http_code=$(echo "$response" | tail -n1)
   response_body=$(echo "$response" | head -n -1)
   
@@ -72,7 +72,7 @@ create_directory_and_commit() {
   local directory=$2
   local source_path=$3
   echo "in create_directory_and_commit"
-  git clone "https://${GITHUB_TOKEN}@github.com/${TARGET_ORG}/${repo_name}.git"
+  git clone "https://${CLONE_GITHUB_TOKEN}@github.com/${TARGET_ORG}/${repo_name}.git"
   if [ $? -ne 0 ]; then
     echo "Failed to clone repository $repo_name"
     sleep 10s
