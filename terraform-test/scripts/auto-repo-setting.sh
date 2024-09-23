@@ -135,7 +135,7 @@ create_directory_and_commit() {
     # .yml 파일을 처리합니다.
     for file in "$directory"/*.yml; do
         if [ -f "$file" ]; then
-            if [[ "$file" == *"docker-image.yml" ]]; then
+            if [[ "$file" == *${WORKFLOW_ID} ]]; then
                 echo "Processing $file"
                 # Replace ${github.organization.name} in docker-image.yml
                 perform_sed_replacement "$file" '\${github.organization.name}' "$GENERAL_NAME" "$os"

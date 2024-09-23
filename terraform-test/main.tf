@@ -26,15 +26,31 @@ data "azurerm_key_vault_secret" "clone_github_token" {
   key_vault_id = data.azurerm_key_vault.key_vault.id
 }
 
+data "azurerm_key_vault_secret" "nexus_id" {
+  name         = "NEXUS-ID"
+  key_vault_id = data.azurerm_key_vault.key_vault.id
+}
+
+data "azurerm_key_vault_secret" "nexus_password" {
+  name         = "NEXUS-PASSWORD"
+  key_vault_id = data.azurerm_key_vault.key_vault.id
+}
+
 output "github_token" {
   value = data.azurerm_key_vault_secret.github_token.value
   sensitive = true
 }
 
-output "clone_github_token" {
-  value = data.azurerm_key_vault_secret.clone_github_token.value
+output "nexus_id" {
+  value = data.azurerm_key_vault_secret.nexus_id.value
   sensitive = true
 }
+
+output "nexus_password" {
+  value = data.azurerm_key_vault_secret.nexus_password.value
+  sensitive = true
+}
+
 
 
 # data "kubernetes_service" "argocd" {
@@ -97,6 +113,21 @@ resource "github_actions_secret" "AZURE_URL" {
   secret_name = "AZURE_URL"
   plaintext_value = data.azurerm_container_registry.example.login_server
 }
+
+resource "github_actions_secret" "NEXUS_ID" {
+  depends_on = [terraform_data.run_script]
+  repository = var.PROJECT_NAME
+  secret_name = "NEXUS_ID"
+  plaintext_value = data.azurerm_key_vault_secret.nexus_id.value
+}
+
+resource "github_actions_secret" "NEXUS_PASSWORD" {
+  depends_on = [terraform_data.run_script]
+  repository = var.PROJECT_NAME
+  secret_name = "NEXUS_PASSWORD"
+  plaintext_value = data.azurerm_key_vault_secret.nexus_password.value
+}
+
 
 # github action
 resource "terraform_data" "github_actions_script" {
