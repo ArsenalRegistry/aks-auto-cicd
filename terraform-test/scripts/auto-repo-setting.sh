@@ -72,7 +72,7 @@ create_directory_and_commit() {
   local directory=$2
   local source_path=$3
   echo "in create_directory_and_commit"
-  git clone "https://${CLONE_GITHUB_TOKEN}@github.com/${TARGET_ORG}/${repo_name}.git"
+  git clone "https://${GITHUB_TOKEN}@github.com/${GROUP_NAME}/${repo_name}.git"
   if [ $? -ne 0 ]; then
     echo "Failed to clone repository $repo_name"
     sleep 10s
@@ -159,7 +159,7 @@ TEMP_DIR="temp-repo"
 if [ -d "$TEMP_DIR" ]; then
   rm -rf "$TEMP_DIR"
 fi
-git clone "$SOURCE_REPO_URL" "$TEMP_DIR"
+git clone "https://${CLONE_GITHUB_TOKEN}@github.com/${SOURCE_REPO_URL}.git" "$TEMP_DIR"
 if [ $? -ne 0 ]; then
   echo "Failed to clone the source repository"
   exit 1

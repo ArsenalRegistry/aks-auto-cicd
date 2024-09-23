@@ -34,9 +34,6 @@ variable "AZURE_URL" {
 variable "SOURCE_REPO_URL" {
   type = string
 }
-variable "TARGET_ORG" {
-  type = string
-}
 variable "BASE_API_URL" {
   type = string
 }
