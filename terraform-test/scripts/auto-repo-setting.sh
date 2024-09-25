@@ -192,8 +192,8 @@ fi
 # Step 3: Project명-Repository 구성
 if repository_exists "$PROJECT_NAME"; then
   echo "Repository $PROJECT_NAME already exists. Stopping script."
-  rm -rf "$TEMP_DIR"
-  exit 1
+  # rm -rf "$TEMP_DIR"
+  # exit 1
 else
   create_repository "$PROJECT_NAME"
   if [ $? -ne 0 ]; then

@@ -32,7 +32,15 @@ echo "Connect in to Azure Cluster..."
 az aks get-credentials --resource-group $AZURE_RESOURCE_GROUP_NAME --name $AZURE_ClUSTER_NAME
 sleep 5
 kubectl get nodes
-# kubectl create ns $DEST_NAMESPACE
+kubectl get 
+
+# 네임스페이스가 존재하는지 확인
+if ! kubectl get ns "$DEST_NAMESPACE" > /dev/null 2>&1; then
+  echo "Namespace $DEST_NAMESPACE does not exist. Creating..."
+  kubectl create ns "$DEST_NAMESPACE"
+else
+  echo "Namespace $DEST_NAMESPACE already exists."
+fi
 
 # 1. Update ConfigMap
 CONFIGMAP_NAME=$(kubectl get cm -n $NAMESPACE --no-headers -o custom-columns=":metadata.name" | grep $CONFIGMAP_PATTERN | head -n 1)

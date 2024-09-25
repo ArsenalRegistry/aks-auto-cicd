@@ -17,7 +17,7 @@ data "azurerm_key_vault" "key_vault" {
 }
 
 data "azurerm_key_vault_secret" "github_token" {
-  name         = "GITHUB-TOKEN2"
+  name         = "GITHUB-TOKEN"
   key_vault_id = data.azurerm_key_vault.key_vault.id
 }
 
@@ -53,16 +53,21 @@ output "nexus_password" {
 
 
 
-# data "kubernetes_service" "argocd" {
-#   metadata {
-#     name = "${var.ARGOCD_INITIAL}-${var.SERVER_NAME_GREP}"
-#     namespace = var.NAMESPACE  # ArgoCD가 배포된 네임스페이스
-#   }
-# }
+data "kubernetes_service" "argocd" {
+  metadata {
+    # name = "${var.ARGOCD_INITIAL}-${var.SERVER_NAME_GREP}"
+    name = "argocd-server"
+    namespace = var.NAMESPACE  # ArgoCD가 배포된 네임스페이스
+  }
+}
 
-# output "argocd_server_ip" {
-#   value = data.kubernetes_service.argocd.status[0].load_balancer[0].ingress[0].ip
-# }
+output "argocd_status" {
+  value = data.kubernetes_service.argocd.status[0]
+}
+
+output "argocd_server_ip" {
+  value = data.kubernetes_service.argocd.status[0].load_balancer[0].ingress[0].ip
+}
 
 
 resource "terraform_data" "run_script" {
@@ -150,51 +155,51 @@ data "azurerm_kubernetes_cluster" "aks" {
 }
 
 
-# resource "terraform_data" "run_argocd_script" {
-#   triggers_replace = [terraform_data.github_actions_script.id]
+resource "terraform_data" "run_argocd_script" {
+  # triggers_replace = [terraform_data.github_actions_script.id]
 
-#   provisioner "local-exec" {
-#     command = "chmod +x ${path.module}/auto-argocd-setting.sh && sh ${path.module}/auto-argocd-setting.sh"
-#     working_dir = "${path.module}/scripts"  # 쉘 스크립트가 위치한 디렉토리
-#   }
-# }
+  provisioner "local-exec" {
+    command = "chmod +x ${path.module}/auto-argocd-setting.sh && sh ${path.module}/auto-argocd-setting.sh"
+    working_dir = "${path.module}/scripts"  # 쉘 스크립트가 위치한 디렉토리
+  }
+}
 
 
-# resource "argocd_application" "backend-app" {
-#   depends_on = [terraform_data.run_argocd_script]
-#   metadata {
-#     name      = var.APP_NAME
-#     namespace = var.NAMESPACE
-#   }
-#   spec {
+resource "argocd_application" "backend-app" {
+  depends_on = [terraform_data.run_argocd_script]
+  metadata {
+    name      = var.APP_NAME
+    namespace = var.NAMESPACE
+  }
+  spec {
 
-#     project = var.PROJECT_NAME_DEFAULT
+    project = var.PROJECT_NAME_DEFAULT
     
-#     source {
-#       repo_url        = var.REPO_URL
-#       # repo_url        = data.terraform_remote_state.vpc.outputs.http_clone_url
-#       path            = var.REPO_PATH
-#       target_revision = var.TARGET_REVISION
-#     }
+    source {
+      repo_url        = var.REPO_URL
+      # repo_url        = data.terraform_remote_state.vpc.outputs.http_clone_url
+      path            = var.REPO_PATH
+      target_revision = var.TARGET_REVISION
+    }
 
-#     destination {
-#       server    = var.DEST_SERVER
-#       namespace = var.DEST_NAMESPACE
-#     }
+    destination {
+      server    = var.DEST_SERVER
+      namespace = var.DEST_NAMESPACE
+    }
 
   
-#   }
-# }
+  }
+}
 
-# resource "terraform_data" "run_argocd_sync" {
-#   triggers_replace = [argocd_application.backend-app.status]
-#   provisioner "local-exec" {
-#     environment = {
-#       APP_NAME = var.APP_NAME
-#       PASSWORD = var.ARGOCD_PASSWORD
-#       SERVER_IP = data.kubernetes_service.argocd.status[0].load_balancer[0].ingress[0].ip
-#     }
-#     command = "chmod +x ${path.module}/auto-argocd-sync.sh && sh ${path.module}/auto-argocd-sync.sh"
-#     working_dir = "${path.module}/scripts"  # 쉘 스크립트가 위치한 디렉토리
-#   }
-# }
+resource "terraform_data" "run_argocd_sync" {
+  triggers_replace = [argocd_application.backend-app.status]
+  provisioner "local-exec" {
+    environment = {
+      APP_NAME = var.APP_NAME
+      PASSWORD = var.ARGOCD_PASSWORD
+      SERVER_IP = data.kubernetes_service.argocd.status[0].load_balancer[0].ingress[0].ip
+    }
+    command = "chmod +x ${path.module}/auto-argocd-sync.sh && sh ${path.module}/auto-argocd-sync.sh"
+    working_dir = "${path.module}/scripts"  # 쉘 스크립트가 위치한 디렉토리
+  }
+}
