@@ -29,10 +29,9 @@ echo "Azure login successful."
 
 # 0-1. Azure Cluster Connect
 echo "Connect in to Azure Cluster..."
-az aks get-credentials --resource-group $AZURE_RESOURCE_GROUP_NAME --name $AZURE_ClUSTER_NAME
-sleep 5
+# az aks get-credentials --resource-group $AZURE_RESOURCE_GROUP_NAME --name $AZURE_ClUSTER_NAME
+# sleep 5
 kubectl get nodes
-kubectl get 
 
 # 네임스페이스가 존재하는지 확인
 if ! kubectl get ns "$DEST_NAMESPACE" > /dev/null 2>&1; then
