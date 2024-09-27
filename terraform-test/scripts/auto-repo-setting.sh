@@ -213,7 +213,7 @@ if ! create_directory_and_commit "$PROJECT_NAME" "$WORKFLOW_DIRECTORY" "$SOURCE_
 fi
 echo "step5"
 # Step 5: Project Repository에 src template import
-SOURCE_SRC_PATH="$TEMP_DIR/java-template/src-template"
+SOURCE_SRC_PATH="$TEMP_DIR/java-template/src-template/$LANGUAGE"
 if ! create_directory_and_commit "$PROJECT_NAME" "." "$SOURCE_SRC_PATH"; then
   echo "Failed to copy files from $SOURCE_SRC_PATH"
   rm -rf "$TEMP_DIR"
