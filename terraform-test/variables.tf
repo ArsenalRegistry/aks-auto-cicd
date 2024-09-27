@@ -111,3 +111,6 @@ variable "TARGET_REVISION" {
 variable "REPO_URL" {
   type = string
 }
+variable "LANGUAGE" {
+  type = string
+}
