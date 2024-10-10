@@ -121,20 +121,14 @@ resource "github_actions_secret" "AZURE_URL" {
   plaintext_value = data.azurerm_container_registry.example.login_server
 }
 
-resource "github_actions_secret" "NEXUS_ID" {
-  depends_on = [terraform_data.run_script]
-  repository = var.PROJECT_NAME
-  secret_name = "NEXUS_ID"
-  plaintext_value = data.azurerm_key_vault_secret.nexus_id.value
+provider "github" {
+  #owner = organization
+  owner = var.GROUP_NAME
+  token = data.azurerm_key_vault_secret.github_token.value
+  # token = var.GITHUB_TOKEN
 }
 
-resource "github_actions_secret" "NEXUS_PASSWORD" {
-  depends_on = [terraform_data.run_script]
-  repository = var.PROJECT_NAME
-  secret_name = "NEXUS_PASSWORD"
-  plaintext_value = data.azurerm_key_vault_secret.nexus_password.value
-}
-
+provider "null" {}
 
 # github action
 resource "terraform_data" "github_actions_script" {
@@ -193,15 +187,10 @@ resource "argocd_application" "backend-app" {
   }
 }
 
-resource "terraform_data" "run_argocd_sync" {
-  triggers_replace = [argocd_application.backend-app.status]
-  provisioner "local-exec" {
-    environment = {
-      APP_NAME = var.APP_NAME
-      PASSWORD = var.ARGOCD_PASSWORD
-      SERVER_IP = data.kubernetes_service.argocd.status[0].load_balancer[0].ingress[0].ip
-    }
-    command = "chmod +x ${path.module}/auto-argocd-sync.sh && sh ${path.module}/auto-argocd-sync.sh"
-    working_dir = "${path.module}/scripts"  # 쉘 스크립트가 위치한 디렉토리
-  }
+provider "argocd" {
+  server_addr = data.kubernetes_service.argocd.status[0].load_balancer[0].ingress[0].ip
+  # server_addr = "100.64.255.140:30861"
+  username     = var.ARGOCD_USERNAME
+  password     = var.ARGOCD_PASSWORD
+  insecure     = true
 }

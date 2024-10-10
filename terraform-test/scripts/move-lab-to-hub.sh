@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # GitLab과 GitHub 토큰 설정
-export GITLAB_PRIVATE_TOKEN="4mbz_xywPuTvyL5R8xKx" # gitlab organization token 입력
-export GITHUB_TOKEN="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" #  본인 github token 입력
+export GITLAB_PRIVATE_TOKEN="" # gitlab organization token 입력
+export GITHUB_TOKEN="" #  본인 github token 입력
 
 # Organization 명 설정
 GITLAB_GROUP="one-view" # gitlab group name 입력

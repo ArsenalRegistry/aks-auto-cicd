@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # GitHub 인증 정보
-GITHUB_TOKEN="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"
+GITHUB_TOKEN=""
 GITHUB_ORG="OG014110-NeOSS-OV"
 
 # 대상 사용자
