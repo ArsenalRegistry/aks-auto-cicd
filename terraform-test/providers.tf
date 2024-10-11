@@ -16,7 +16,6 @@ provider "null" {}
 provider "kubernetes" {
   config_path = "~/.kube/config"
   config_context= var.AZURE_ClUSTER_NAME
-  # host                   = "https://aks-az01-d-rg-az01-bg012401-3ac7dc-c5prvaz6.hcp.koreacentral.azmk8s.io"
   # host                   = data.azurerm_kubernetes_cluster.aks.kube_config.0.host
   # client_certificate     = base64decode(data.azurerm_kubernetes_cluster.aks.kube_config.0.client_certificate)
   # client_key             = base64decode(data.azurerm_kubernetes_cluster.aks.kube_config.0.client_key)
