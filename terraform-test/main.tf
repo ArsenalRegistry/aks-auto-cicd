@@ -51,27 +51,6 @@ output "nexus_password" {
   sensitive = true
 }
 
-data "kubernetes_service" "argocd" {
-  metadata {
-    # name = "${var.ARGOCD_INITIAL}-${var.SERVER_NAME_GREP}"
-    name = trimspace(var.SERVER_NAME_GREP)
-    namespace = trimspace(var.NAMESPACE)  # ArgoCD가 배포된 네임스페이스
-    # name = "argocd-server"
-    # namespace = "argocd"
-  }
-}
-# output "argocd_nodeport" {
-#   value = data.kubernetes_service.argocd.spec.ports[0].node_port
-# }
-
-output "argocd_status" {
-  value = data.kubernetes_service.argocd.status[0]
-}
-
-# output "argocd_server_ip" {
-#   value = data.kubernetes_service.argocd.status[0].load_balancer[0].ingress[0].ip
-# }
-
 resource "terraform_data" "run_script" {
   provisioner "local-exec" {
     environment = {
@@ -150,6 +129,27 @@ data "azurerm_kubernetes_cluster" "aks" {
   resource_group_name = var.AZURE_RESOURCE_GROUP_NAME
 }
 
+
+data "kubernetes_service" "argocd" {
+  metadata {
+    # name = "${var.ARGOCD_INITIAL}-${var.SERVER_NAME_GREP}"
+    name = trimspace(var.SERVER_NAME_GREP)
+    namespace = trimspace(var.NAMESPACE)  # ArgoCD가 배포된 네임스페이스
+    # name = "argocd-server"
+    # namespace = "argocd"
+  }
+}
+# output "argocd_nodeport" {
+#   value = data.kubernetes_service.argocd.spec.ports[0].node_port
+# }
+
+output "argocd_status" {
+  value = data.kubernetes_service.argocd.status[0]
+}
+
+# output "argocd_server_ip" {
+#   value = data.kubernetes_service.argocd.status[0].load_balancer[0].ingress[0].ip
+# }
 
 resource "terraform_data" "run_argocd_script" {
   triggers_replace = [terraform_data.github_actions_script.id]

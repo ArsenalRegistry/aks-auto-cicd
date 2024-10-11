@@ -23,8 +23,8 @@ provider "kubernetes" {
 }
 
 provider "argocd" {
-  # server_addr = data.kubernetes_service.argocd.status[0].load_balancer[0].ingress[0].ip
-  server_addr = "100.64.255.140:30861"
+  server_addr = data.kubernetes_service.argocd.status[0].load_balancer[0].ingress[0].ip
+  # server_addr = "100.64.255.140:30861"
   username     = var.ARGOCD_USERNAME
   password     = var.ARGOCD_PASSWORD
   insecure     = true
