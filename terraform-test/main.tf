@@ -100,15 +100,6 @@ resource "github_actions_secret" "AZURE_URL" {
   plaintext_value = data.azurerm_container_registry.example.login_server
 }
 
-provider "github" {
-  #owner = organization
-  owner = var.GROUP_NAME
-  token = data.azurerm_key_vault_secret.github_token.value
-  # token = var.GITHUB_TOKEN
-}
-
-provider "null" {}
-
 # github action
 resource "terraform_data" "github_actions_script" {
   # triggers_replace = [github_actions_secret.AZURE_URL.updated_at]
