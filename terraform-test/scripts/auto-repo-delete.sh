@@ -3,8 +3,8 @@
 # GITHUB_TOKEN="$GITHUB_TOKEN"
 # GitHub organization 이름과 삭제할 리포지토리 이름을 설정합니다.
 ORG_NAME="$GROUP_NAME"
-REPO1="${GROUP_NAME}-ops"
-REPO2="$PROJECT_NAME"
+REPO1="${GROUP_NAME}-ops2"
+# REPO2="$PROJECT_NAME"
 # 환경 변수에서 GitHub Personal Access Token을 가져옵니다.
 GITHUB_TOKEN=$(terraform output -raw github_token)
 # terraform 리소스 삭제
@@ -26,4 +26,4 @@ delete_repo() {
 
 # 리포지토리 삭제 호출
 delete_repo "$REPO1"
-delete_repo "$REPO2"
+# delete_repo "$REPO2"

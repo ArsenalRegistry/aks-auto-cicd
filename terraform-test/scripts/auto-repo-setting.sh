@@ -105,7 +105,7 @@ create_directory_and_commit() {
     # Change metadata.name in YAML files
     GENERAL_NAME="$GROUP_NAME"
     PROJECT_NAME="$PROJECT_NAME"
-    for file in "$directory"/*.yaml; do
+    for file in "$directory/base"/*.yaml; do
         if [ -f "$file" ]; then
             echo "Updating metadata.name in $file"
 
@@ -135,7 +135,7 @@ create_directory_and_commit() {
     # .yml 파일을 처리합니다.
     for file in "$directory"/*.yml; do
         if [ -f "$file" ]; then
-            if [[ "$file" == *${WORKFLOW_ID} ]]; then
+            if [[ "$file" == *${LANGUAGE}.yml ]]; then
                 echo "Processing $file"
                 # Replace ${github.organization.name} in docker-image.yml
                 perform_sed_replacement "$file" '\${github.organization.name}' "$GENERAL_NAME" "$os"
@@ -166,7 +166,7 @@ if [ $? -ne 0 ]; then
 fi
 
 # Step 1: Group명-ops 레포지토리 생성
-GROUP_REPO_NAME="${GROUP_NAME}-ops"
+GROUP_REPO_NAME="${GROUP_NAME}-ops2"
 if repository_exists "$GROUP_REPO_NAME"; then
   echo "Repository $GROUP_REPO_NAME already exists. Stopping script."
   rm -rf "$TEMP_DIR"
@@ -213,7 +213,7 @@ if ! create_directory_and_commit "$PROJECT_NAME" "$WORKFLOW_DIRECTORY" "$SOURCE_
 fi
 echo "step5"
 # Step 5: Project Repository에 src template import
-SOURCE_SRC_PATH="$TEMP_DIR/java-template/src-template/$LANGUAGE"
+SOURCE_SRC_PATH="$TEMP_DIR/java-template/src-template/$LANGUAGE"+"-inner"
 if ! create_directory_and_commit "$PROJECT_NAME" "." "$SOURCE_SRC_PATH"; then
   echo "Failed to copy files from $SOURCE_SRC_PATH"
   rm -rf "$TEMP_DIR"
