@@ -17,7 +17,7 @@ error_found=false  # 오류 여부를 추적하는 플래그
 while IFS= read -r line || [[ -n "$line" ]]; do
     # 주석(#) 이후 부분과 좌우 공백을 제거한 깨끗한 라인
     clean_line=$(echo "$line" | sed 's/[[:space:]]*#.*//' | xargs)    
-    
+
     # 주석과 빈 줄을 무시합니다.
     if [[ -n "$clean_line" ]]; then
         # TF_VAR_ 접두사 제거
@@ -31,9 +31,12 @@ while IFS= read -r line || [[ -n "$line" ]]; do
             error_found=true
         fi
 
+        # 변수를 평가 (eval을 사용하여 변수 확장)
+        expanded_value=$(eval echo "$var_value")
+
         # 변수와 값 저장 (디버깅용 출력 및 임시 파일에 기록)
-        echo "var_name: $var_name, var_value: $var_value"
-        echo "export $var_name=\"$var_value\"" >> "$temp_file"
+        echo "var_name: $var_name, var_value: $expanded_value"
+        echo "export $var_name=\"$expanded_value\"" >> "$temp_file"
     fi
 done < config.env
 
