@@ -6,7 +6,7 @@ provider "azurerm" {
 
 provider "github" {
   #owner = organization
-  owner = var.GROUP_NAME
+  owner = var.ORG_NAME
   token = data.azurerm_key_vault_secret.github_token.value
   # token = var.GITHUB_TOKEN
 }

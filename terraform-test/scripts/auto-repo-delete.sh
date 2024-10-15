@@ -2,8 +2,8 @@
 
 # GITHUB_TOKEN="$GITHUB_TOKEN"
 # GitHub organization 이름과 삭제할 리포지토리 이름을 설정합니다.
-ORG_NAME="$GROUP_NAME"
-REPO1="${GROUP_NAME}-ops2"
+ORG_NAME="$ORG_NAME"
+REPO1="${OPS_NAME}-ops"
 # REPO2="$PROJECT_NAME"
 # 환경 변수에서 GitHub Personal Access Token을 가져옵니다.
 GITHUB_TOKEN=$(terraform output -raw github_token)

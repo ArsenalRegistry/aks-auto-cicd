@@ -27,7 +27,7 @@ fi
 # 레포지토리 존재 여부 체크 함수
 repository_exists() {
   local repo_name=$1
-  response=$(curl -k -s -w "%{http_code}" -H "Authorization: token $GITHUB_TOKEN" "$BASE_API_URL/repos/$GROUP_NAME/$repo_name")
+  response=$(curl -k -s -w "%{http_code}" -H "Authorization: token $GITHUB_TOKEN" "$BASE_API_URL/repos/$ORG_NAME/$repo_name")
   http_code=$(echo "$response" | tail -c 4)
   if [ "$http_code" -eq 200 ]; then
     return 0  # Repository exists
@@ -39,7 +39,7 @@ repository_exists() {
 # 레포지토리 생성 함수
 create_repository() {
   local repo_name=$1
-  response=$(curl -k -s -w "\n%{http_code}" -H "Authorization: token $GITHUB_TOKEN" -d '{"name":"'"$repo_name"'","private": true}' "$BASE_API_URL/orgs/$GROUP_NAME/repos")
+  response=$(curl -k -s -w "\n%{http_code}" -H "Authorization: token $GITHUB_TOKEN" -d '{"name":"'"$repo_name"'","private": true}' "$BASE_API_URL/orgs/$ORG_NAME/repos")
   http_code=$(echo "$response" | tail -n1)
   response_body=$(echo "$response" | head -n -1)
   
@@ -72,7 +72,7 @@ create_directory_and_commit() {
   local directory=$2
   local source_path=$3
   echo "in create_directory_and_commit"
-  git clone "https://${GITHUB_TOKEN}@github.com/${GROUP_NAME}/${repo_name}.git"
+  git clone "https://${GITHUB_TOKEN}@github.com/${ORG_NAME}/${repo_name}.git"
   if [ $? -ne 0 ]; then
     echo "Failed to clone repository $repo_name"
     sleep 10s
@@ -103,7 +103,7 @@ create_directory_and_commit() {
   # Check if the source path ends with "gitops-template" or "workflow-template"
   if [[ "$source_path" == *"gitops-template" ]]; then
     # Change metadata.name in YAML files
-    GENERAL_NAME="$GROUP_NAME"
+    GENERAL_NAME="$ORG_NAME"
     PROJECT_NAME="$PROJECT_NAME"
     for file in "$directory/base"/*.yaml; do
         if [ -f "$file" ]; then
@@ -119,7 +119,7 @@ create_directory_and_commit() {
             if [[ "$file" == *"deployment.yaml" ]]; then
                 echo "Processing $file"
                 perform_sed_replacement "$file" '\${project_name}' "$PROJECT_NAME" "$os"
-                perform_sed_replacement "$file" '\${acr_url}' "$AZURE_URL" "$os"
+                perform_sed_replacement "$file" '\${acr_login_server}' "$ACR_LOGIN_SERVER" "$os"
             fi
             
             perform_sed_replacement "$file" '\${name}' "$GENERAL_NAME" "$os"
@@ -130,7 +130,7 @@ create_directory_and_commit() {
   elif [[ "$source_path" == *"workflow-template" ]]; then
     echo "in workflow-template"
     # Change metadata.name in YAML files
-    GENERAL_NAME="$GROUP_NAME"
+    GENERAL_NAME="$ORG_NAME"
     echo "workflow-template edit $file"
     # .yml 파일을 처리합니다.
     for file in "$directory"/*.yml; do
@@ -166,7 +166,7 @@ if [ $? -ne 0 ]; then
 fi
 
 # Step 1: Group명-ops 레포지토리 생성
-GROUP_REPO_NAME="${GROUP_NAME}-ops2"
+GROUP_REPO_NAME="${OPS_NAME}-ops"
 if repository_exists "$GROUP_REPO_NAME"; then
   echo "Repository $GROUP_REPO_NAME already exists. Stopping script."
   rm -rf "$TEMP_DIR"
@@ -213,7 +213,7 @@ if ! create_directory_and_commit "$PROJECT_NAME" "$WORKFLOW_DIRECTORY" "$SOURCE_
 fi
 echo "step5"
 # Step 5: Project Repository에 src template import
-SOURCE_SRC_PATH="$TEMP_DIR/java-template/src-template/$LANGUAGE"+"-inner"
+SOURCE_SRC_PATH="$TEMP_DIR/java-template/src-template/$LANGUAGE-inner"
 if ! create_directory_and_commit "$PROJECT_NAME" "." "$SOURCE_SRC_PATH"; then
   echo "Failed to copy files from $SOURCE_SRC_PATH"
   rm -rf "$TEMP_DIR"

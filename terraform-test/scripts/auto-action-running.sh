@@ -30,13 +30,13 @@ curl -X POST \
   -H "Authorization: token ${GITHUB_TOKEN}" \
   -H "Content-Type: application/json" \
   -d "{\"ref\": \"${ACTION_BRANCH}\", \"inputs\": ${INPUTS}}" \
-  "https://api.github.com/repos/${GROUP_NAME}/${PROJECT_NAME}/actions/workflows/${WORKFLOW_ID}/dispatches"
+  "https://api.github.com/repos/${ORG_NAME}/${PROJECT_NAME}/actions/workflows/${WORKFLOW_ID}/dispatches"
   
 
 # 워크플로우 ID를 얻기 위한 함수
 get_workflow_run_id() {
   curl -H "Authorization: token ${GITHUB_TOKEN}" \
-    "https://api.github.com/repos/${GROUP_NAME}/${PROJECT_NAME}/actions/runs?status=in_progress" | \
+    "https://api.github.com/repos/${ORG_NAME}/${PROJECT_NAME}/actions/runs?status=in_progress" | \
     grep -o '"id": [0-9]*' | \
     awk '{print $2}' | \
     head -n 1
@@ -54,7 +54,7 @@ done
 
 while true; do
   RESPONSE=$(curl -H "Authorization: token ${GITHUB_TOKEN}" \
-    "https://api.github.com/repos/${GROUP_NAME}/${PROJECT_NAME}/actions/runs/${RUN_ID}")
+    "https://api.github.com/repos/${ORG_NAME}/${PROJECT_NAME}/actions/runs/${RUN_ID}")
   
   # STATUS와 CONCLUSION 추출 및 쌍따옴표 제거
   STATUS=$(echo "$RESPONSE" | grep -o '"status": "[^"]*"' | awk -F '": "' '{print $2}' | tr -d '"')

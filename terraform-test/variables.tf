@@ -7,13 +7,18 @@ variable "KEY_VAULT_NAME" {
   type        = string
 }
 
-variable "GROUP_NAME" {
+variable "ORG_NAME" {
   description = "The group name for your repositories"
   type        = string
 }
 
 variable "PROJECT_NAME" {
   description = "The project name for your repositories"
+  type        = string
+}
+
+variable "OPS_NAME" {
+  description = "The gitops name for your repositories"
   type        = string
 }
 
@@ -28,9 +33,6 @@ variable "AZURE_SUBSCRIPTION" {
 }
 
 
-variable "AZURE_URL" {
-  type = string
-}
 variable "SOURCE_REPO_URL" {
   type = string
 }

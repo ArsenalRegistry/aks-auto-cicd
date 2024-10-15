@@ -10,6 +10,24 @@ terraform {
     }
   }
 }
+
+# data "azurerm_resource_group" "azure_resource_group" {
+#   name = var.AZURE_RESOURCE_GROUP_NAME
+# }
+
+# aks
+data "azurerm_kubernetes_cluster" "aks" {
+  name                = var.AZURE_ClUSTER_NAME
+  resource_group_name = var.AZURE_RESOURCE_GROUP_NAME
+}
+
+# acr
+data "azurerm_container_registry" "example" {
+  name = var.AZURE_REGISTRY_NAME
+  resource_group_name = var.AZURE_RESOURCE_GROUP_NAME
+}
+
+
 # Key Vault에서 GitHub 토큰 가져오기
 data "azurerm_key_vault" "key_vault" {
   name                = var.KEY_VAULT_NAME
@@ -56,19 +74,11 @@ resource "terraform_data" "run_script" {
     environment = {
       GITHUB_TOKEN = nonsensitive(data.azurerm_key_vault_secret.github_token.value)
       CLONE_GITHUB_TOKEN = nonsensitive(data.azurerm_key_vault_secret.clone_github_token.value)
+      ACR_LOGIN_SERVER =  nonsensitive(data.azurerm_container_registry.example.login_server)
     }
     command = "sh ${path.module}/auto-repo-setting.sh"
     working_dir = "${path.module}/scripts"  # 쉘 스크립트가 위치한 디렉토리
   }
-}
-
-data "azurerm_resource_group" "azure_resource_group" {
-  name = var.AZURE_RESOURCE_GROUP_NAME
-}
-
-data "azurerm_container_registry" "example" {
-  name = var.AZURE_REGISTRY_NAME
-  resource_group_name = var.AZURE_RESOURCE_GROUP_NAME
 }
 
 resource "github_actions_secret" "ACTION_TOKEN" {
@@ -93,17 +103,17 @@ resource "github_actions_secret" "ACR_PASSWORD" {
   plaintext_value = data.azurerm_container_registry.example.admin_password
 }
 
-resource "github_actions_secret" "AZURE_URL" {
+resource "github_actions_secret" "ACR_LOGIN_SERVER" {
   depends_on = [terraform_data.run_script]
   repository = var.PROJECT_NAME
-  secret_name = "AZURE_URL"
+  secret_name = "ACR_LOGIN_SERVER"
   plaintext_value = data.azurerm_container_registry.example.login_server
 }
 
 # github action
 resource "terraform_data" "github_actions_script" {
-  # triggers_replace = [github_actions_secret.AZURE_URL.updated_at]
-  depends_on = [github_actions_secret.AZURE_URL]
+  # triggers_replace = [github_actions_secret.ACR_LOGIN_SERVER.updated_at]
+  depends_on = [github_actions_secret.ACR_LOGIN_SERVER]
   provisioner "local-exec" {
     environment = {
       GITHUB_TOKEN = nonsensitive(data.azurerm_key_vault_secret.github_token.value)
@@ -113,14 +123,7 @@ resource "terraform_data" "github_actions_script" {
   }
 }
 
-
 # argocd
-data "azurerm_kubernetes_cluster" "aks" {
-  name                = var.AZURE_ClUSTER_NAME
-  resource_group_name = var.AZURE_RESOURCE_GROUP_NAME
-}
-
-
 data "kubernetes_service" "argocd" {
   metadata {
     # name = "${var.ARGOCD_INITIAL}-${var.SERVER_NAME_GREP}"
@@ -130,9 +133,6 @@ data "kubernetes_service" "argocd" {
     # namespace = "argocd"
   }
 }
-# output "argocd_nodeport" {
-#   value = data.kubernetes_service.argocd.spec.ports[0].node_port
-# }
 
 output "argocd_status" {
   value = data.kubernetes_service.argocd.status[0]
@@ -142,18 +142,25 @@ output "argocd_status" {
 #   value = data.kubernetes_service.argocd.status[0].load_balancer[0].ingress[0].ip
 # }
 
-resource "terraform_data" "run_argocd_script" {
-  triggers_replace = [terraform_data.github_actions_script.id]
-
-  provisioner "local-exec" {
-    command = "chmod +x ${path.module}/auto-argocd-setting.sh && sh ${path.module}/auto-argocd-setting.sh"
-    working_dir = "${path.module}/scripts"  # 쉘 스크립트가 위치한 디렉토리
-  }
+resource "argocd_repository" "github_repo" {
+  depends_on = [terraform_data.github_actions_script]
+  repo = var.REPO_URL
+  username = var.github_username
+  password = var.github_token
 }
+
+# resource "terraform_data" "run_argocd_script" {
+#   triggers_replace = [terraform_data.github_actions_script.id]
+
+#   provisioner "local-exec" {
+#     command = "chmod +x ${path.module}/auto-argocd-setting.sh && sh ${path.module}/auto-argocd-setting.sh"
+#     working_dir = "${path.module}/scripts"  # 쉘 스크립트가 위치한 디렉토리
+#   }
+# }
 
 
 resource "argocd_application" "backend-app" {
-  depends_on = [terraform_data.run_argocd_script]
+  depends_on = [argocd_repository.run_argocd_script]
   metadata {
     name      = trimspace(var.APP_NAME)
     namespace = trimspace(var.NAMESPACE)  # ArgoCD가 배포된 네임스페이스
