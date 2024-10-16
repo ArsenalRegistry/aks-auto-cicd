@@ -135,7 +135,7 @@ create_directory_and_commit() {
     # .yml 파일을 처리합니다.
     for file in "$directory"/*.yml; do
         if [ -f "$file" ]; then
-            if [[ "$file" == *${LANGUAGE}.yml ]]; then
+            if [[ "$file" == *${BUILD_TOOL}.yml ]]; then
                 echo "Processing $file"
                 # Replace ${github.organization.name} in docker-image.yml
                 perform_sed_replacement "$file" '\${github.organization.name}' "$GENERAL_NAME" "$os"
@@ -182,7 +182,7 @@ fi
 
 # Step 2: Group-ops에 charts 디렉토리 구성 및 argocd target resouce yaml 구성
 CHARTS_DIRECTORY="charts/$PROJECT_NAME"
-SOURCE_CHARTS_PATH="$TEMP_DIR/java-template/gitops-template"
+SOURCE_CHARTS_PATH="$TEMP_DIR/$LANGUAGE-template/gitops-template"
 if ! create_directory_and_commit "$GROUP_REPO_NAME" "$CHARTS_DIRECTORY" "$SOURCE_CHARTS_PATH"; then
   echo "Failed to copy files from $SOURCE_CHARTS_PATH"
   rm -rf "$TEMP_DIR"
@@ -205,7 +205,7 @@ fi
 echo "step4"
 # Step 4: Project Repository에 workflow template import
 WORKFLOW_DIRECTORY=".github/workflows"
-SOURCE_WORKFLOW_PATH="$TEMP_DIR/java-template/workflow-template"
+SOURCE_WORKFLOW_PATH="$TEMP_DIR/$LANGUAGE-template/workflow-template"
 if ! create_directory_and_commit "$PROJECT_NAME" "$WORKFLOW_DIRECTORY" "$SOURCE_WORKFLOW_PATH"; then
   echo "Failed to copy files from $SOURCE_WORKFLOW_PATH"
   rm -rf "$TEMP_DIR"
@@ -213,7 +213,7 @@ if ! create_directory_and_commit "$PROJECT_NAME" "$WORKFLOW_DIRECTORY" "$SOURCE_
 fi
 echo "step5"
 # Step 5: Project Repository에 src template import
-SOURCE_SRC_PATH="$TEMP_DIR/java-template/src-template/$LANGUAGE-inner"
+SOURCE_SRC_PATH="$TEMP_DIR/$LANGUAGE-template/src-template/$BUILD_TOOL-inner"
 if ! create_directory_and_commit "$PROJECT_NAME" "." "$SOURCE_SRC_PATH"; then
   echo "Failed to copy files from $SOURCE_SRC_PATH"
   rm -rf "$TEMP_DIR"

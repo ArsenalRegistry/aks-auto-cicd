@@ -116,3 +116,6 @@ variable "REPO_URL" {
 variable "LANGUAGE" {
   type = string
 }
+variable "BUILD_TOOL" {
+  type = string
+}
