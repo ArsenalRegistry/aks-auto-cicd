@@ -103,7 +103,7 @@ create_directory_and_commit() {
   # Check if the source path ends with "gitops-template" or "workflow-template"
   if [[ "$source_path" == *"gitops-template" ]]; then
     # Change metadata.name in YAML files
-    GENERAL_NAME="$ORG_NAME"
+    GENERAL_NAME="$OPS_NAME"
     PROJECT_NAME="$PROJECT_NAME"
     for file in "$directory/base"/*.yaml; do
         if [ -f "$file" ]; then
@@ -130,15 +130,15 @@ create_directory_and_commit() {
   elif [[ "$source_path" == *"workflow-template" ]]; then
     echo "in workflow-template"
     # Change metadata.name in YAML files
-    GENERAL_NAME="$ORG_NAME"
+    GENERAL_NAME="$OPS_NAME"
     echo "workflow-template edit $file"
     # .yml 파일을 처리합니다.
     for file in "$directory"/*.yml; do
         if [ -f "$file" ]; then
             if [[ "$file" == *${BUILD_TOOL}.yml ]]; then
                 echo "Processing $file"
-                # Replace ${github.organization.name} in docker-image.yml
-                perform_sed_replacement "$file" '\${github.organization.name}' "$GENERAL_NAME" "$os"
+                # Replace ${ops.name} in docker-image.yml
+                perform_sed_replacement "$file" '\${ops.name}' "$OPS_NAME" "$os"
             fi
         fi
     done    

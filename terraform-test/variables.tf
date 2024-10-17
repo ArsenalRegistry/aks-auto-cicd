@@ -41,11 +41,6 @@ variable "BASE_API_URL" {
 }
 
 
-
-variable "WORKFLOW_ID" {
-  type = string
-  description = "The ID or filename of the workflow to trigger"
-}
 variable "DOCKER_TAG" {
   type = string
   description = "The ID or filename of the workflow to trigger"
@@ -113,9 +108,18 @@ variable "TARGET_REVISION" {
 variable "REPO_URL" {
   type = string
 }
+variable "ARGOCD_TOKEN" {
+  type = string
+}
+variable "ARGOCD_HOST_SERVER" {
+  type = string
+}
 variable "LANGUAGE" {
   type = string
 }
 variable "BUILD_TOOL" {
+  type = string
+}
+variable "GITHUB_USERNAME" {
   type = string
 }

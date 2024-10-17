@@ -134,19 +134,25 @@ data "kubernetes_service" "argocd" {
   }
 }
 
-output "argocd_status" {
-  value = data.kubernetes_service.argocd.status[0]
-}
+# output "argocd_status" {
+#   value = data.kubernetes_service.argocd.status[0]
+# }
 
 # output "argocd_server_ip" {
 #   value = data.kubernetes_service.argocd.status[0].load_balancer[0].ingress[0].ip
 # }
-
-resource "argocd_repository" "github_repo" {
+resource "null_resource" "run_argocd_repo_script" {
   depends_on = [terraform_data.github_actions_script]
-  repo = var.REPO_URL
-  username = var.github_username
-  password = var.github_token
+  provisioner "local-exec" {
+    environment = {
+      GITHUB_TOKEN      = nonsensitive(data.azurerm_key_vault_secret.github_token.value)
+    }
+    command     = "sh ${path.module}/scripts/auto-argocd-setting.sh"
+    working_dir = "${path.module}/scripts"
+  }
+  triggers = {
+    repo_url = var.REPO_URL
+  }
 }
 
 # resource "terraform_data" "run_argocd_script" {
@@ -160,22 +166,19 @@ resource "argocd_repository" "github_repo" {
 
 
 resource "argocd_application" "backend-app" {
-  depends_on = [argocd_repository.run_argocd_script]
+  depends_on = [argocd_repository.github_repo]
   metadata {
     name      = trimspace(var.APP_NAME)
     namespace = trimspace(var.NAMESPACE)  # ArgoCD가 배포된 네임스페이스
   }
   spec {
-
     project = var.PROJECT_NAME_DEFAULT
-    
     source {
       repo_url        = var.REPO_URL
       # repo_url        = data.terraform_remote_state.vpc.outputs.http_clone_url
       path            = var.REPO_PATH
       target_revision = var.TARGET_REVISION
     }
-
     destination {
       server    = var.DEST_SERVER
       namespace = var.DEST_NAMESPACE

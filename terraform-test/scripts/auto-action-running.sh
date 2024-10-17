@@ -30,7 +30,7 @@ curl -X POST \
   -H "Authorization: token ${GITHUB_TOKEN}" \
   -H "Content-Type: application/json" \
   -d "{\"ref\": \"${ACTION_BRANCH}\", \"inputs\": ${INPUTS}}" \
-  "https://api.github.com/repos/${ORG_NAME}/${PROJECT_NAME}/actions/workflows/${WORKFLOW_ID}/dispatches"
+  "https://api.github.com/repos/${ORG_NAME}/${PROJECT_NAME}/actions/workflows/${BUILD_TOOL}.yml/dispatches"
   
 
 # 워크플로우 ID를 얻기 위한 함수
