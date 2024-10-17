@@ -141,7 +141,7 @@ data "kubernetes_service" "argocd" {
 # output "argocd_server_ip" {
 #   value = data.kubernetes_service.argocd.status[0].load_balancer[0].ingress[0].ip
 # }
-resource "null_resource" "run_argocd_repo_script" {
+resource "terraform_data" "run_argocd_repo_script" {
   depends_on = [terraform_data.github_actions_script]
   provisioner "local-exec" {
     environment = {
@@ -150,9 +150,7 @@ resource "null_resource" "run_argocd_repo_script" {
     command     = "sh ${path.module}/scripts/auto-argocd-setting.sh"
     working_dir = "${path.module}/scripts"
   }
-  triggers = {
-    repo_url = var.REPO_URL
-  }
+  
 }
 
 # resource "terraform_data" "run_argocd_script" {
