@@ -22,7 +22,7 @@ fi
 # ArgoCD 토큰이 null이면 새로 발급
 if [ "$ARGOCD_TOKEN" = "null" ]; then
   echo "Token is null, generating new ArgoCD token..."
-  NEW_TOKEN=$(curl -X POST -d '{"username": "'"$ARGOCD_USERNAME"'", "password": "'"$ARGOCD_PASSWORD"'"}' \
+  NEW_TOKEN=$(curl -X POST -H "Content-Type: application/json" -d '{"username": "'"$ARGOCD_USERNAME"'", "password": "'"$ARGOCD_PASSWORD"'"}' \
     http://$ARGOCD_HOST_SERVER/api/v1/session | jq -r '.token')
 
   # config.env 파일 업데이트
@@ -41,5 +41,6 @@ curl -X POST \
     "repo": "'"${REPO_URL}.git"'",
     "username": "'"$GITHUB_USERNAME"'",
     "password": "'"$GITHUB_TOKEN"'",
-    "insecure": false
+    "insecure": false,
+    "project": "default"
   }'
