@@ -164,7 +164,7 @@ resource "terraform_data" "run_argocd_repo_script" {
 
 
 resource "argocd_application" "backend-app" {
-  depends_on = [argocd_repository.github_repo]
+  depends_on = [terraform_data.run_argocd_repo_script]
   metadata {
     name      = trimspace(var.APP_NAME)
     namespace = trimspace(var.NAMESPACE)  # ArgoCD가 배포된 네임스페이스
