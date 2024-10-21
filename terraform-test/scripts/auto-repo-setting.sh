@@ -72,7 +72,7 @@ create_directory_and_commit() {
   local directory=$2
   local source_path=$3
   echo "in create_directory_and_commit"
-  git clone "https://${GITHUB_TOKEN}@github.com/${ORG_NAME}/${repo_name}.git"
+  git clone "https://${GITHUB_TOKEN}@github.com/${ORG_NAME}/${repo_name}.git" "$repo_name"
   if [ $? -ne 0 ]; then
     echo "Failed to clone repository $repo_name"
     sleep 10s
@@ -165,7 +165,7 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
-# Step 1: Group명-ops 레포지토리 생성
+# Step 1: ORG명-ops 레포지토리 생성
 GROUP_REPO_NAME="${OPS_NAME}-ops"
 if repository_exists "$GROUP_REPO_NAME"; then
   echo "Repository $GROUP_REPO_NAME already exists. Stopping script."
@@ -180,7 +180,7 @@ else
   fi
 fi
 
-# Step 2: Group-ops에 charts 디렉토리 구성 및 argocd target resouce yaml 구성
+# Step 2: ORG명-ops에 charts 디렉토리 구성 및 argocd target resouce yaml 구성
 CHARTS_DIRECTORY="charts/$PROJECT_NAME"
 SOURCE_CHARTS_PATH="$TEMP_DIR/$LANGUAGE-template/gitops-template"
 if ! create_directory_and_commit "$GROUP_REPO_NAME" "$CHARTS_DIRECTORY" "$SOURCE_CHARTS_PATH"; then
