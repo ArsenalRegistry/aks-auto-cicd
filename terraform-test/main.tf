@@ -147,7 +147,7 @@ resource "terraform_data" "run_argocd_repo_script" {
     environment = {
       GITHUB_TOKEN      = nonsensitive(data.azurerm_key_vault_secret.github_token.value)
     }
-    command     = "sh ${path.module}/scripts/auto-argocd-setting.sh"
+    command     = "sh ${path.module}/auto-argocd-setting.sh"
     working_dir = "${path.module}/scripts"
   }
   
