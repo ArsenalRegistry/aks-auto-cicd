@@ -11,10 +11,6 @@ terraform {
   }
 }
 
-# data "azurerm_resource_group" "azure_resource_group" {
-#   name = var.AZURE_RESOURCE_GROUP_NAME
-# }
-
 # aks
 data "azurerm_kubernetes_cluster" "aks" {
   name                = var.AZURE_ClUSTER_NAME
@@ -85,7 +81,6 @@ resource "github_actions_secret" "ACTION_TOKEN" {
   depends_on = [terraform_data.run_script]
   repository = var.PROJECT_NAME
   secret_name = "ACTION_TOKEN"
-  # plaintext_value = var.GITHUB_TOKEN
   plaintext_value = data.azurerm_key_vault_secret.github_token.value
 }
 
@@ -112,7 +107,6 @@ resource "github_actions_secret" "ACR_LOGIN_SERVER" {
 
 # github action
 resource "terraform_data" "github_actions_script" {
-  # triggers_replace = [github_actions_secret.ACR_LOGIN_SERVER.updated_at]
   depends_on = [github_actions_secret.ACR_LOGIN_SERVER]
   provisioner "local-exec" {
     environment = {
@@ -124,28 +118,35 @@ resource "terraform_data" "github_actions_script" {
 }
 
 # argocd
-data "kubernetes_service" "argocd" {
+# data "kubernetes_service" "argocd" {
+#   metadata {
+#     name = trimspace("${var.ARGOCD_INITIAL}-${var.SERVER_NAME_GREP}")
+#     # name = trimspace(var.SERVER_NAME_GREP)
+#     namespace = trimspace(var.NAMESPACE)  # ArgoCD가 배포된 네임스페이스
+#     # name = "argocd-server"
+#     # namespace = "argocd"
+#   }
+# }
+
+# argocd
+data "kubernetes_ingress" "argocd_ingress" {
   metadata {
-    # name = "${var.ARGOCD_INITIAL}-${var.SERVER_NAME_GREP}"
-    name = trimspace(var.SERVER_NAME_GREP)
-    namespace = trimspace(var.NAMESPACE)  # ArgoCD가 배포된 네임스페이스
-    # name = "argocd-server"
-    # namespace = "argocd"
+    name      = trimspace("${var.ARGOCD_INITIAL}-${var.SERVER_NAME_GREP}")  # Ingress 리소스 이름
+    namespace = trimspace(var.NAMESPACE)
   }
 }
 
-# output "argocd_status" {
-#   value = data.kubernetes_service.argocd.status[0]
-# }
+output "argocd_ingress_hosts" {
+  value = data.kubernetes_ingress.argocd_ingress.spec[0].rules[*].host
+}
 
-# output "argocd_server_ip" {
-#   value = data.kubernetes_service.argocd.status[0].load_balancer[0].ingress[0].ip
-# }
+
 resource "terraform_data" "run_argocd_repo_script" {
   depends_on = [terraform_data.github_actions_script]
   provisioner "local-exec" {
     environment = {
       GITHUB_TOKEN      = nonsensitive(data.azurerm_key_vault_secret.github_token.value)
+      ARGOCD_HOST_SERVER = nonsensitive(data.kubernetes_ingress.argocd_ingress.spec[0].rules[*].host)
     }
     command     = "sh ${path.module}/auto-argocd-setting.sh"
     working_dir = "${path.module}/scripts"
@@ -162,19 +163,17 @@ resource "terraform_data" "run_argocd_repo_script" {
 #   }
 # }
 
-
 resource "argocd_application" "backend-app" {
   depends_on = [terraform_data.run_argocd_repo_script]
   metadata {
-    name      = trimspace(var.APP_NAME)
+    name      = trimspace(var.PROJECT_NAME)
     namespace = trimspace(var.NAMESPACE)  # ArgoCD가 배포된 네임스페이스
   }
   spec {
     project = var.PROJECT_NAME_DEFAULT
     source {
-      repo_url        = var.REPO_URL
-      # repo_url        = data.terraform_remote_state.vpc.outputs.http_clone_url
-      path            = var.REPO_PATH
+      repo_url        = "https://github.com/${var.ORG_NAME}/${var.OPS_NAME}-ops.git"
+      path            = "charts/${var.PROJECT_NAME}/overlays/dev"
       target_revision = var.TARGET_REVISION
     }
     destination {

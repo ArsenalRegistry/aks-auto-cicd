@@ -32,15 +32,23 @@ if [ "$ARGOCD_TOKEN" = "null" ]; then
   export ARGOCD_TOKEN=$NEW_TOKEN
 fi
 
-# ArgoCD에 리포지토리 등록
-curl -X POST \
-  http://$ARGOCD_HOST_SERVER/api/v1/repositories \
-  -H "Authorization: Bearer $ARGOCD_TOKEN" \
-  -H "Content-Type: application/json" \
+# curl 요청 실행
+response=$(curl -s -o response.json -w "%{http_code}" -X POST "http://$ARGOCD_HOST_SERVER/api/v1/repositories" \
+  -H "authorization: bearer $ARGOCD_TOKEN" \
+  -H "content-type: application/json" \
   -d '{
     "repo": "'"${REPO_URL}.git"'",
     "username": "'"$GITHUB_USERNAME"'",
     "password": "'"$GITHUB_TOKEN"'",
     "insecure": false,
     "project": "default"
-  }'
+  }')
+
+# HTTP 상태 코드 확인
+if [ "$response" -eq 200 ]; then
+  echo "Repository connect successfully."
+else
+  echo "Failed to connect repository. HTTP Status: $response"
+  cat response.json   # 오류 세부 정보 출력
+  exit 1              # 오류 발생 시 종료
+fi

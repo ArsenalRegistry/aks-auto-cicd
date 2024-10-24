@@ -56,20 +56,20 @@ variable "ACTION_BRANCH" {
 variable "AZURE_ClUSTER_NAME" {
   type = string
 }
-variable "CONFIGMAP_PATTERN" {
-  default = "argocd-cm"
-  type = string
-}
+
 variable "NAMESPACE" {
   default = "argocd"
   type = string
 }
+variable "ARGOCD_INTITAL" {
+  default = "argocd"
+  type = string
+}
+
 variable "SERVER_NAME_GREP" {
   type = string
 }
-variable "ARGOCD_INITIAL" {
-  type = string
-}
+
 variable "ARGOCD_USERNAME" {
   default = "admin"
   type = string
@@ -77,11 +77,6 @@ variable "ARGOCD_USERNAME" {
 
 variable "ARGOCD_PASSWORD" {
   default = "New1234!"
-  type = string
-}
-
-
-variable "APP_NAME" {
   type = string
 }
 
@@ -99,9 +94,6 @@ variable "PROJECT_NAME_DEFAULT" {
   type = string
 }
 
-variable "REPO_PATH" {
-  type = string
-}
 variable "TARGET_REVISION" {
   type = string
 }
@@ -111,9 +103,7 @@ variable "REPO_URL" {
 variable "ARGOCD_TOKEN" {
   type = string
 }
-variable "ARGOCD_HOST_SERVER" {
-  type = string
-}
+
 variable "LANGUAGE" {
   type = string
 }
