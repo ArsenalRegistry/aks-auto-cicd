@@ -23,7 +23,7 @@ provider "kubernetes" {
 }
 
 provider "argocd" {
-  server_addr = var.ARGOCD_HOST_SERVER
+  server_addr = data.kubernetes_ingress_v1.argocd_ingress.spec[0].rule[0].host
   # server_addr = data.kubernetes_service.argocd.status[0].load_balancer[0].ingress[0].ip
   # server_addr = "100.64.255.140:30861"
   username     = var.ARGOCD_USERNAME

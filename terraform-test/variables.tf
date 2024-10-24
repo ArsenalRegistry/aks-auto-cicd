@@ -61,10 +61,6 @@ variable "NAMESPACE" {
   default = "argocd"
   type = string
 }
-variable "ARGOCD_INTITAL" {
-  default = "argocd"
-  type = string
-}
 
 variable "SERVER_NAME_GREP" {
   type = string
