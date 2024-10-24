@@ -46,9 +46,12 @@ response=$(curl -s -o response.json -w "%{http_code}" -X POST "http://$ARGOCD_HO
 
 # HTTP 상태 코드 확인
 if [ "$response" -eq 200 ]; then
-  echo "Repository connect successfully."
+  echo "Repository added successfully."
+elif [ "$response" -eq 409 ]; then
+  echo "Repository already exists. Continuing... (HTTP Status: 409)"
+  exit 0  # 정상적인 상태로 간주하고 종료
 else
-  echo "Failed to connect repository. HTTP Status: $response"
+  echo "Failed to add repository. HTTP Status: $response"
   cat response.json   # 오류 세부 정보 출력
-  exit 1              # 오류 발생 시 종료
+  exit 1              # 다른 오류 발생 시 종료
 fi
