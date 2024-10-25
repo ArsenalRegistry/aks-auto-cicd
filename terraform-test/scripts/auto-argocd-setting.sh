@@ -19,39 +19,56 @@ if [ -f config.env ]; then
     done < config.env
 fi
 
-# ArgoCD 토큰이 null이면 새로 발급
-if [ "$ARGOCD_TOKEN" = "null" ]; then
-  echo "Token is null, generating new ArgoCD token..."
-  NEW_TOKEN=$(curl -X POST -H "Content-Type: application/json" -d '{"username": "'"$ARGOCD_USERNAME"'", "password": "'"$ARGOCD_PASSWORD"'"}' \
-    http://$ARGOCD_HOST_SERVER/api/v1/session | jq -r '.token')
 
-  # config.env 파일 업데이트
-  sed -i.bak 's/TF_VAR_ARGOCD_TOKEN="null"/TF_VAR_ARGOCD_TOKEN="'"$NEW_TOKEN"'" # argocd token(처음엔 null 값)/' config.env
+ARGOCD_TOKEN=$(curl -L -X POST -H "Content-Type: application/json" -d '{"username": "'"$ARGOCD_USERNAME"'", "password": "'"$ARGOCD_PASSWORD"'"}' \
+  http://$ARGOCD_HOST_SERVER/api/v1/session | jq -r '.token')
 
-  # 새 토큰을 환경 변수로 설정
-  export ARGOCD_TOKEN=$NEW_TOKEN
-fi
+echo $ARGOCD_TOKEN
 
-# curl 요청 실행
-response=$(curl -s -o response.json -w "%{http_code}" -X POST "http://$ARGOCD_HOST_SERVER/api/v1/repositories" \
-  -H "authorization: bearer $ARGOCD_TOKEN" \
-  -H "content-type: application/json" \
-  -d '{
-    "repo": "'"${REPO_URL}.git"'",
-    "username": "'"$GITHUB_USERNAME"'",
-    "password": "'"$GITHUB_TOKEN"'",
-    "insecure": false,
-    "project": "default"
-  }')
+# 리포지토리 존재 여부 확인
+check_response=$(curl -s -L -X GET "http://$ARGOCD_HOST_SERVER/api/v1/repositories" \
+  -H "Authorization: Bearer $ARGOCD_TOKEN" \
+  -H "Content-Type: application/json")
 
-# HTTP 상태 코드 확인
-if [ "$response" -eq 200 ]; then
-  echo "Repository added successfully."
-elif [ "$response" -eq 409 ]; then
-  echo "Repository already exists. Continuing... (HTTP Status: 409)"
-  exit 0  # 정상적인 상태로 간주하고 종료
+# 응답 출력 (디버깅 용도)
+echo "API Response: $check_response"
+
+# 리포지토리 리스트에서 특정 리포지토리 확인
+repo_exists=$(echo "$check_response" | jq '.items[] | select(.repo == "'"${REPO_URL}.git"'")')
+
+if [ -n "$repo_exists" ]; then
+  echo "Repository already exists. Skipping..."
+  exit 0
 else
-  echo "Failed to add repository. HTTP Status: $response"
-  cat response.json   # 오류 세부 정보 출력
-  exit 1              # 다른 오류 발생 시 종료
+  echo "Repository not found. Adding new repository..."
+
+
+  
+  # 리포지토리 추가 요청
+  response=$(curl -s -o response.json -w "%{http_code}" -L -X POST "http://$ARGOCD_HOST_SERVER/api/v1/repositories" \
+    -H "Authorization: Bearer $ARGOCD_TOKEN" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "repo": "'"${REPO_URL}.git"'",
+      "username": "'"$GITHUB_USERNAME"'",
+      "password": "'"$GITHUB_TOKEN"'",
+      "insecure": false,
+      "project": "default"
+    }')
+
+  if [ "$response" -eq 200 ]; then
+    echo "Repository added successfully."
+  else
+    echo "Failed to add repository. HTTP Status: $response"
+    cat response.json
+    exit 1
+  fi
 fi
+
+
+
+
+
+
+
+
