@@ -116,7 +116,7 @@ create_directory_and_commit() {
             fi
             perform_sed_replacement "$file" '\${acr_login_server}' "$ACR_LOGIN_SERVER" "$os"
             perform_sed_replacement "$file" '\${name}' "$PROJECT_NAME" "$os"
-            perform_sed_replacement "$file" '\${namespace}' "$NAMESPACE" "$os"
+            perform_sed_replacement "$file" '\${namespace}' "$DEST_NAMESPACE" "$os"
         fi
     done
     for file in "$directory/overlays/dev/kustomization.yaml"; do
@@ -124,7 +124,7 @@ create_directory_and_commit() {
             echo "Updating metadata.name in $file"  
             perform_sed_replacement "$file" '\${acr_login_server}' "$ACR_LOGIN_SERVER" "$os"
             perform_sed_replacement "$file" '\${name}' "$PROJECT_NAME" "$os"
-            perform_sed_replacement "$file" '\${namespace}' "$NAMESPACE" "$os"
+            perform_sed_replacement "$file" '\${namespace}' "$DEST_NAMESPACE" "$os"
         fi
     done
   elif [[ "$source_path" == *"workflow-template" ]]; then
