@@ -114,19 +114,12 @@ create_directory_and_commit() {
                 echo "Skipping $file"
                 continue
             fi
-
-            # deployment.yaml 파일의 경우
-            if [[ "$file" == *"deployment.yaml" ]]; then
-                echo "Processing $file"
-                perform_sed_replacement "$file" '\${name}' "$PROJECT_NAME" "$os"
-                perform_sed_replacement "$file" '\${acr_login_server}' "$ACR_LOGIN_SERVER" "$os"
-            fi
-            
+            perform_sed_replacement "$file" '\${acr_login_server}' "$ACR_LOGIN_SERVER" "$os"
             perform_sed_replacement "$file" '\${name}' "$PROJECT_NAME" "$os"
             perform_sed_replacement "$file" '\${namespace}' "$NAMESPACE" "$os"
         fi
     done
-    for file in "$directory/dev/kustomization.yaml"; do
+    for file in "$directory/overlays/dev/kustomization.yaml"; do
         if [ -f "$file" ]; then
             echo "Updating metadata.name in $file"  
             perform_sed_replacement "$file" '\${acr_login_server}' "$ACR_LOGIN_SERVER" "$os"
