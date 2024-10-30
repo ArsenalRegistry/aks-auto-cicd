@@ -118,15 +118,22 @@ create_directory_and_commit() {
             # deployment.yaml 파일의 경우
             if [[ "$file" == *"deployment.yaml" ]]; then
                 echo "Processing $file"
-                perform_sed_replacement "$file" '\${project_name}' "$PROJECT_NAME" "$os"
+                perform_sed_replacement "$file" '\${name}' "$PROJECT_NAME" "$os"
                 perform_sed_replacement "$file" '\${acr_login_server}' "$ACR_LOGIN_SERVER" "$os"
             fi
             
-            perform_sed_replacement "$file" '\${name}' "$GENERAL_NAME" "$os"
+            perform_sed_replacement "$file" '\${name}' "$PROJECT_NAME" "$os"
             perform_sed_replacement "$file" '\${namespace}' "$NAMESPACE" "$os"
         fi
     done
-
+    for file in "$directory/dev/kustomization.yaml"; do
+        if [ -f "$file" ]; then
+            echo "Updating metadata.name in $file"  
+            perform_sed_replacement "$file" '\${acr_login_server}' "$ACR_LOGIN_SERVER" "$os"
+            perform_sed_replacement "$file" '\${name}' "$PROJECT_NAME" "$os"
+            perform_sed_replacement "$file" '\${namespace}' "$NAMESPACE" "$os"
+        fi
+    done
   elif [[ "$source_path" == *"workflow-template" ]]; then
     echo "in workflow-template"
     # Change metadata.name in YAML files
@@ -169,8 +176,8 @@ fi
 GROUP_REPO_NAME="${OPS_NAME}-ops"
 if repository_exists "$GROUP_REPO_NAME"; then
   echo "Repository $GROUP_REPO_NAME already exists. Stopping script."
-  rm -rf "$TEMP_DIR"
-  exit 1
+  # rm -rf "$TEMP_DIR"
+  # exit 1
 else
   create_repository "$GROUP_REPO_NAME"
   if [ $? -ne 0 ]; then
